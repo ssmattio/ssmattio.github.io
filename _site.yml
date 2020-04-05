@@ -1,1 +1,24 @@
-
+name: "Sara Mattio"
+output_dir: "."
+navbar:
+  title: "Sara Mattio"
+  left:
+    - text: "Flood Inundation Modeling"
+      href: research.html
+    - text: "Predicting EMS Response"
+      href: talks.html
+    - text: "Home Price Forecasting"
+      href: software.html
+    - text: "JavaScript"
+      href: teaching.html
+  right:
+    - icon: fa-envelope fa-lg
+      href: contact.html
+    - icon: fa-github fa-lg
+      href: http://github.com/ssmattio
+    - icon: fa-linkedin fa-lg
+      href: https://www.linkedin.com/in/saramattio/
+output:
+  html_document:
+    theme: paper
+    css: 'styles.css'
