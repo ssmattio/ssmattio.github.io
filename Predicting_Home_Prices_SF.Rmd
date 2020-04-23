@@ -1,0 +1,343 @@
+---
+title: "Predicting Home Values in San Francisco - MUSA507 Midterm"
+author: "Sara Mattio and Kate Sutton"
+date: "10/15/2019"
+output:  
+  html_document#:
+    toc: TRUE
+    toc_float: true
+    theme: united
+---
+
+## Introduction
+Predictive modeling can be a powerful tool in dtermining trends in property value. In October 2019, Zillow observed a need for an improved housing market prediction model put out a request for an improved model of home prices in San Francisco. The following model was developed to meet Zillow’s need and predict 2017 home prices in San Francisco as accurately as possible. To make a confident prediction, fice key predictors from a range of open data sources were utilized. The indicators range from environmental factors to demographic and economic data. This report provides insight on the data used, methods for developing the model, and the results and accuracy of the model. 
+
+Although accuracy of results was the primary goal, the project incurred challanges that diminished accuracy in results. 
+
+## Data
+Data was gathered from DataSF, San Francisco's Open Data portal. Sources include the City of San Francisco's Planning Department, Public Safety, and the Rent Arbitration Board. Survey data from the American Community Survey (ACS) was also utilized through the tidycensus package in R. 
+
+```{r echo=FALSE, message=FALSE, include=FALSE, results='hide'}
+r = getOption("repos")
+r["CRAN"] = "http://cran.us.r-project.org"
+options(repos = r)
+setwd("~/Desktop/MUSA507/Midterm/Final_Data")
+
+install.packages("rgdal")
+install.packages("tidycensus")
+
+library(dplyr)
+library(rgdal)
+library(tidyverse)
+library(tidycensus)
+library(caret)
+library(sf)
+library(spdep)
+library(ckanr)
+library(FNN)
+library(grid)
+library(gridExtra)
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+
+# ---- map palettes and styles ----
+#color palette
+palette5 <- c("#25CB10", "#5AB60C", "#8FA108",   "#C48C04", "#FA7800")
+
+#this function converts a column in to quintiles. It is used for mapping.
+qBr <- function(df, variable, rnd) {
+  if (missing(rnd)) {
+    as.character(quantile(round(df[[variable]],0),
+                          c(.01,.2,.4,.6,.8), na.rm=T))
+  } else if (rnd == FALSE | rnd == F) {
+    as.character(formatC(quantile(df[[variable]]), digits = 3),
+                 c(.01,.2,.4,.6,.8), na.rm=T)
+  }
+}
+
+q5 <- function(variable) {as.factor(ntile(variable, 5))}
+
+#map themes
+mapTheme <- function(base_size = 12) {
+  theme(
+    text = element_text( color = "black"),
+    plot.title = element_text(size = 14,colour = "black"),
+    plot.subtitle=element_text(face="italic"),
+    plot.caption=element_text(hjust=0),
+    axis.ticks = element_blank(),
+    panel.background = element_blank(),axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, size=2)
+  )
+}
+
+plotTheme <- function(base_size = 12) {
+  theme(
+    text = element_text( color = "black"),
+    plot.title = element_text(size = 14,colour = "black"),
+    plot.subtitle = element_text(face="italic"),
+    plot.caption = element_text(hjust=0),
+    axis.ticks = element_blank(),
+    panel.background = element_blank(),
+    panel.grid.major = element_line("grey80", size = 0.1),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, size=2),
+    strip.background = element_rect(fill = "grey80", color = "white"),
+    strip.text = element_text(size=12),
+    axis.title = element_text(size=12),
+    axis.text = element_text(size=10),
+    plot.background = element_blank(),
+    legend.background = element_blank(),
+    legend.title = element_text(colour = "black", face = "italic"),
+    legend.text = element_text(colour = "black", face = "italic"),
+    strip.text.x = element_text(size = 14)
+  )
+}
+
+# ---- early important stuff ----
+
+options(tigris_use_chache = TRUE)
+
+census_api_key("a7e8cf22d61cfaeca8e855304a07e8f35b139d06", overwrite = TRUE)
+
+neighborhoods <- st_read("https://data.sfgov.org/api/geospatial/p5b7-5n3h?method=export&format=GeoJSON") %>%
+  st_transform(4326)
+SF_homes <- st_read("SF_homes_1.shp") %>%
+  st_transform(4326)
+
+Homes_landUse <- st_read("Homes_landUse/Homes_landUse.shp") %>%
+  st_transform(4326)
+
+
+
+# spatial join of homes to neighborhood boundaries
+SF_homes_join <- st_join(SF_homes, neighborhoods)
+
+#spatial join the land use file
+SF_homes_2 <- st_join(Homes_landUse, neighborhoods)
+head(SF_homes_2)
+SF_homes_sold <- subset(SF_homes_2, 
+                        SalePrice >0)
+
+# ---- working with tidycensus ----
+v15 <- load_variables(2015, "acs5", cache = TRUE)
+
+sf1_v10 <- load_variables(2010, "sf1", cache = TRUE)
+
+#testing with median house value
+acs_medhval <- get_acs(geography = "block group",
+                       variables = c(MEDHVAL = "B25077_001"), 
+                       year = 2015, 
+                       state = "CA", 
+                       county = "San Francisco", 
+                       geometry = TRUE)
+
+acs_medhval_2 <- get_acs(geography = "tract",
+                         variables = "B25077_001", 
+                         year = 2015, 
+                         state = "CA", 
+                         county = "San Francisco", 
+                         geometry = TRUE)
+
+st_crs(Homes_landUse)
+st_crs(acs_medhval) <- 4326
+st_crs(acs_medhval_2) <- 4326
+
+census_1 <- st_join(SF_homes_2, acs_medhval)
+head(census_1)
+
+# ---- fixing No Data ----
+#clean up zeros
+sale_jointable <- read_sf("points_join.shp")
+census_1$Stories <- sale_jointable$Stories
+census_1$Rooms <- sale_jointable$Rooms
+census_1$Beds <- sale_jointable$Beds
+census_1$Baths <- sale_jointable$Baths
+
+# ---- crime data wrangling ----
+SFcrimes <- read.csv("Police_Department_Incident_Reports__Historical_2017.csv")
+
+#filter and test extent of each crime type to explain sale price
+SFcrimes.sf <-
+  SFcrimes %>%
+  filter(Category == "ASSAULT",
+         Y > -1) %>%
+  dplyr::select(X, Y) %>%
+  na.omit() %>%
+  st_as_sf(coords = c("X", "Y"), crs = 4326, agr = "constant") %>%
+  st_transform(4326) %>%
+  distinct()
+
+#2.4 Feature Engineering crime data
+nn_function <- function(measureFrom,measureTo,k) {
+  measureFrom_Matrix <-
+    as.matrix(measureFrom)
+  measureTo_Matrix <-
+    as.matrix(measureTo)
+  nn <-   
+    get.knnx(measureTo, measureFrom, k)$nn.dist
+  output <-
+    as.data.frame(nn) %>%
+    rownames_to_column(var = "thisPoint") %>%
+    gather(points, point_distance, V1:ncol(.)) %>%
+    arrange(as.numeric(thisPoint)) %>%
+    group_by(thisPoint) %>%
+    summarize(pointDistance = mean(point_distance)) %>%
+    arrange(as.numeric(thisPoint)) %>% 
+    dplyr::select(-thisPoint) %>%
+    pull()
+  
+  return(output)  
+}
+
+census_1$crime_nn1 =
+  nn_function(st_coordinates(census_1), st_coordinates(SFcrimes.sf), 1)
+
+census_1$crime_nn2 =
+  nn_function(st_coordinates(census_1), st_coordinates(SFcrimes.sf), 2)
+
+census_1$crime_nn3 =
+  nn_function(st_coordinates(census_1), st_coordinates(SFcrimes.sf), 3)    
+
+census_1$crime_nn4 =
+  nn_function(st_coordinates(census_1), st_coordinates(SFcrimes.sf), 4)
+
+census_1$crime_nn5 =
+  nn_function(st_coordinates(census_1), st_coordinates(SFcrimes.sf), 5)
+
+#OLS model - relationship between sale price and living area
+census_1 <- census_1[-c(4757),]
+census_1 <- census_1[-c(8189),]
+
+# ---- the best regression ----
+reg1 <- lm(SalePrice ~ ., data = as.data.frame(census_1) %>% 
+             dplyr::select(SalePrice, BLDGSQFT, Rooms, crime_nn5, nhood, estimate))
+
+# ---- testing relationships amongst predictors ----
+predictors <- as.matrix(cbind(census_1$PropArea, census_1$Beds, census_1$nhood, census_1$BLDGSQFT, census_1$BLOCK_NUM, census_1$estimate))
+
+# ---- Training the model ----
+data_train_test <- subset(census_1, SalePrice > 0)
+
+inTrain <- createDataPartition(
+  y = paste(data_train_test$SalePrice,
+            data_train_test$nhood,
+            data_train_test$Rooms),
+  p = .60, 
+  list = FALSE)
+SF.training_2 <- data_train_test[inTrain,]
+SF.test_2 <- data_train_test[-inTrain,]
+
+reg5 <- lm(SalePrice ~ ., data = as.data.frame(SF.training_2) %>% 
+             dplyr::select(SalePrice, Rooms, BLDGSQFT, crime_nn5, nhood, estimate))
+
+# getting the error for the test set
+SF.test_2 <-
+  SF.test_2 %>%
+  mutate(Regression = "Baseline Regression",
+         SalePrice.Predict = predict(reg5, SF.test_2),
+         SalePrice.Error = SalePrice - SalePrice.Predict,
+         SalePrice.AbsError = abs(SalePrice - SalePrice.Predict),
+         SalePrice.APE = (abs(SalePrice - SalePrice.Predict)) / SalePrice)
+
+
+st_set_geometry(SF.test_2, NULL) %>%
+  summarize(mean(SalePrice.AbsError, na.rm = T)) %>%
+  pull()
+
+st_set_geometry(SF.test_2, NULL) %>%
+  summarize(mean(SalePrice.APE, na.rm = T) * 100) %>%
+  round(2) %>%
+  paste("%")
+
+# ---- cross validation ----
+fitControl <- trainControl(method = "cv", number = 100)
+
+set.seed(825)
+
+reg5.cv <- train(SalePrice ~ ., data = as.data.frame(data_train_test) %>% 
+                   dplyr::select(SalePrice, Rooms, BLDGSQFT, crime_nn5, nhood, estimate), 
+                 method = "lm", trControl = fitControl, na.action = na.pass)
+
+held_Out <- subset(census_1, SalePrice  = 0)
+
+
+# are the home prices spatially autocorrelated
+coords <- st_coordinates(data_train_test) 
+
+neighborList <- knn2nb(knearneigh(coords, 5))
+
+spatialWeights <- nb2listw(neighborList, style="W")
+
+data_train_test$lagPrice <- lag.listw(spatialWeights, data_train_test$SalePrice)
+
+#is the error spatially autocorrelated?
+coords.test <- 
+  filter(SF.test_2, !is.na(SalePrice.Error)) %>% 
+  st_coordinates() 
+
+neighborList.test <- knn2nb(knearneigh(coords.test, 5))
+
+spatialWeights.test <- nb2listw(neighborList.test, style="W")
+
+#calculating Moran's I
+moranTest <- moran.mc(filter(SF.test_2, !is.na(SalePrice.Error))$SalePrice.Error, 
+                      spatialWeights.test , nsim = 999)
+```
+
+The table below provides summary statistics for the variables, sorted by category. 
+```{r, echo=FALSE}
+summary(census_1)
+```
+
+The correlation matrix below indicates the corrleation of all independent variables with the dependent variable. Note a lack of multicollinearity in the model--a lack of independent variables that are highly related to each other. 
+```{r, echo=FALSE}
+res <- cor(predictors)
+round(res, 3)
+```
+
+In Figure 2.1, four indicators of interest are shown in a correlation scatterplot. Variables that appeared to have correlation with sale price were tested to be included in the model. 
+```{r, echo=FALSE}
+census_1 %>%
+  dplyr::select(SalePrice, crime_nn5, LandUse, BLDGSQFT, Rooms) %>%
+  st_set_geometry(NULL) %>%
+  gather(Variable, Value, -SalePrice) %>%
+  ggplot(aes(Value, SalePrice)) +
+  geom_point() +
+  geom_smooth(method = "lm", se=F, colour = "#25CB10") +
+  facet_wrap(~Variable) +
+  labs(title = "Fig. 2.1 Correlations between Sale Price and Selected Variables")
+```
+
+The map in Figure 2.2 shows housing prices mapped out in San Francisco. Higher home values, indicated by orange poionts, tend to be clustered together in the center and northern region of the city. Homes with lower values, indicated by green points, tend to be clustered in the south and southwestern part of San Francisco. 
+```{r, echo=FALSE}
+ggplot() +
+  geom_sf(data = neighborhoods, fill = "grey70") +
+  geom_sf(data = census_1, aes(colour = q5(SalePrice)), show.legend = "point", size = .75) +
+  scale_colour_manual(values = palette5,
+                      labels=qBr(census_1,"SalePrice"),
+                      name="Sale Price") +
+  labs(title="Sale Price, San Francisco",
+       caption="Figure 2.2") +
+  mapTheme()
+```
+
+The maps below show several variables mapped out in San Francisco. 
+```{r, echo=FALSE}
+ggplot() +
+  geom_sf(data = neighborhoods, fill = "grey70") +
+  geom_sf(data = SFcrimes.sf, colour = "#AB280C", size = .50) +
+  labs(title = "Assault Crimes in San Francisco (2017)") +
+  mapTheme()
+```
+
+![](~/Desktop/MUSA507/Midterm/Final_Data/NumberofRooms.png)
+
+## Methods
+After acquiring the data above, datasets were cleaned up to remove any outliers and ensure accuracy of data. For example, if an address was listed with 829 stories, the property was then visually verified. If the number of stories was determined to be visibly inaccurate, the data was corrected.
+
+In order to develop the prediction model, the selected indicators (independent variables) were put into a linear regression model with the sale price as the dependent variable. Simply put, the linear regression model tested whether the combination of indicators accurately predicted sale price. A range of indicators were then tested to determine if they had any effect on sale price. Variables with a significant effect on sale price were included in the final model. The Sale Price is estimated as a function of the group of independent variables. The results of the model are provided below, providing a range of tests to determine goodness of fit for the model. 

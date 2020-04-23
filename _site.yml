@@ -4,13 +4,13 @@ navbar:
   title: "Sara Mattio"
   left:
     - text: "Flood Inundation Modeling"
-      href: Midterm_Markdown_Sara_Ilil.html
+      href: Flood_Inundation_Model.html
     - text: "Predicting EMS Response"
-      href: talks.html
+      href: Predicting_EMS_Response_VABeach.html
     - text: "Home Price Forecasting"
-      href: software.html
-    - text: "JavaScript"
-      href: teaching.html
+      href: Predicting_Home_Prices_SF.html
+    - text: "Geospatial Risk Modeling"
+      href: Analyzing_Geospatial_Risk_Models.html
   right:
     - icon: fa-envelope fa-lg
       href: contact.html
