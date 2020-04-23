@@ -2,9 +2,12 @@
 title: "Forecasting Flood Inundation through Machine Learning in Calgary and Spokane"
 author: "Sara Mattio and Ilil Feiglin"
 date: "3/25/2020"
-output:
-  md_document:
-    variant: markdown_github
+output: 
+  html_document:
+    theme: spacelab
+    highlight: tango
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
@@ -49,6 +52,7 @@ mapTheme <- function(base_size = 12) {
 
 Spk <- st_read("C:/Users/ssmat/Desktop/CPLN675/Midterm/Spokane/fishnetCitySpk.shp")
 Spk <- Spk %>%
+  dplyr::select(-OID_,-Shape_Leng,-Shape_Area,-LU1,-LU2,-LU3) %>%
   st_transform(crs=4326) 
 Spk[is.na(Spk)] <- 0
 
@@ -102,7 +106,7 @@ allPredictions <-
 ClgWithPred <- 
   cbind(Clg,allPredictions) %>%
   mutate(allPredictions = round(allPredictions * 100))
-SpkNoGeo <- Spk %>% as.data.frame() %>% dplyr::select(-geometry)
+
 SpkPredictions2 <- 
   predict(ClgModel, SpkNoGeo, type="response")
 SpkWithPred2 <- 
