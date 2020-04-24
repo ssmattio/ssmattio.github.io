@@ -35,7 +35,6 @@ library(stargazer)
 
 census_api_key("bb77f2a147934164e965121bd02b5cc9e22f3165")
 
-# setwd("C:/Users/ssmat/Desktop/Final_Project")
 ```
 
 ```{r include=FALSE}
@@ -94,12 +93,12 @@ qBr <- function(df, variable, rnd) {
 }
 
 q5 <- function(variable) {as.factor(ntile(variable, 5))}
-
-calls <- read.csv("EMScalls_cleaned.csv", stringsAsFactors = FALSE) %>%
-  st_as_sf(coords = c("geo1", "geo2"), crs = 102747, agr = "constant")
 ```
 
 ```{r include = FALSE}
+calls <- read.csv("C:/Users/ssmat/Desktop/MUSA507/Final_Project/EMScalls_cleaned.csv", stringsAsFactors = FALSE) %>%
+  st_as_sf(coords = c("geo1", "geo2"), crs = 102747, agr = "constant")
+
 VB_CT <- st_read("https://opendata.arcgis.com/datasets/82ada480c5344220b2788154955ce5f0_2.geojson") %>%
   st_transform(102747)
 
@@ -152,9 +151,6 @@ VB_Census <-
          Med_Age = B01002_001E,
          White_Pop = B02001_002E,
   ) %>%
-  select(Total_Pop, Med_Inc, White_Pop,
-         Med_Age,
-         GEOID, geometry) %>%
   mutate(Percent_White = White_Pop / Total_Pop)
 ```
 
@@ -162,12 +158,12 @@ VB_Census <-
 First, calls were mapped out to understand which areas are receiving the most calls. As expected, many calls are located along arterial roads in northern Virginia Beach, indicating that traffic accidents may serve as a useful predictive indicator.  
 
 
-![EMS Call Volume in Virginia Beach](HeatMapBetter.png) 
+![EMS Call Volume in Virginia Beach](C:/Users/ssmat/Desktop/MUSA507/Final_Project/HeatMapBetter.png) 
 
 
 This map shows the number of ambulances at each station, indicating that ambulances seem to be already well dispersed based on existing demand. 
 
-![Dispatch Stations in Virginia Beach, Symbolized by Ambulance Count](EMSCallsMap.png) 
+![Dispatch Stations in Virginia Beach, Symbolized by Ambulance Count](C:/Users/ssmat/Desktop/MUSA507/Final_Project/EMSCallsMap.png) 
 
 
 A relationship may also exist between the number of calls and certain demographic indicators, such as age, income, and race. The map below shoes the median age for census tracts using 2010 Census data from `tidycensus`. As previously suggested, tracts that have higher median ages seem to make less calls, while lower median age census tracts have a higher call density. 

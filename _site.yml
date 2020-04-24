@@ -3,8 +3,6 @@ output_dir: "."
 navbar:
   title: "Sara Mattio"
   left:
-    - text: "Flood Inundation Modeling"
-      href: Flood_Inundation_Model.html
     - text: "Predicting EMS Response"
       href: Predicting_EMS_Response_VABeach.html
     - text: "Home Price Forecasting"
