@@ -18,5 +18,5 @@ navbar:
       href: https://www.linkedin.com/in/saramattio/
 output:
   html_document:
-    theme: paper
+    theme: cerulean
     css: 'styles.css'
