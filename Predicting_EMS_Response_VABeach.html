@@ -26,109 +26,27 @@
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 
-
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
-}
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(title);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-div.sourceCode
-  { background-color: #f8f8f8; }
-@media screen {
-a.sourceLine::before { text-decoration: underline; }
-}
-code span.al { color: #ef2929; } /* Alert */
-code span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #c4a000; } /* Attribute */
-code span.bn { color: #0000cf; } /* BaseN */
-code span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4e9a06; } /* Char */
-code span.cn { color: #000000; } /* Constant */
-code span.co { color: #8f5902; font-style: italic; } /* Comment */
-code span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
-code span.dt { color: #204a87; } /* DataType */
-code span.dv { color: #0000cf; } /* DecVal */
-code span.er { color: #a40000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #0000cf; } /* Float */
-code span.fu { color: #000000; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #204a87; font-weight: bold; } /* Keyword */
-code span.op { color: #ce5c00; font-weight: bold; } /* Operator */
-code span.ot { color: #8f5902; } /* Other */
-code span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
-code span.sc { color: #000000; } /* SpecialChar */
-code span.ss { color: #4e9a06; } /* SpecialString */
-code span.st { color: #4e9a06; } /* String */
-code span.va { color: #000000; } /* Variable */
-code span.vs { color: #4e9a06; } /* VerbatimString */
-code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
-
-.sourceCode .row {
-  width: 100%;
-}
-.sourceCode {
-  overflow-x: auto;
-}
-.code-folding-btn {
-  margin-right: -30px;
-}
-</style>
-<script>
-// apply pandoc div.sourceCode style to pre.sourceCode instead
-(function() {
-  var sheets = document.styleSheets;
-  for (var i = 0; i < sheets.length; i++) {
-    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
-    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
-      var rule = rules[j];
-      // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
-      var style = rule.style.cssText;
-      // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
-      // replace div.sourceCode by a pre.sourceCode rule
-      sheets[i].deleteRule(j);
-      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
-    }
-  }
-})();
-</script>
 <style type="text/css">
   pre:not([class]) {
     background-color: white;
   }
 </style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
 
 
 <style type="text/css">
@@ -550,48 +468,48 @@ div.tocify {
 <div id="space-time-process" class="section level2">
 <h2><span class="header-section-number">3.1</span> Space-Time Process</h2>
 <p>Because the data has both spatial and temporal features, the space-time process creates time-based features that are combined with spatial features to create a panel with every possible observation for space-time combinations. The <code>EMS_calls</code> dataset contains several temporal features, including dispatch time and entry date, but for this analysis, the <code>call_date_and_time</code> field was chosen. A 60-minute time interval was added to eventually create time lags. The resulting <code>Call_Time</code> panel is shown below.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">study.panel &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb2-2" title="2"><span class="st">  </span><span class="kw">expand.grid</span>(<span class="dt">interval60 =</span> <span class="kw">unique</span>(calls<span class="op">$</span>interval60),</a>
-<a class="sourceLine" id="cb2-3" title="3">              <span class="dt">TRACTCE10 =</span> <span class="kw">unique</span>(calls<span class="op">$</span>TRACTCE10))</a>
-<a class="sourceLine" id="cb2-4" title="4"></a>
-<a class="sourceLine" id="cb2-5" title="5">call.panel &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb2-6" title="6"><span class="st">  </span>calls <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb2-7" title="7"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Call_Counter =</span> <span class="dv">1</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb2-8" title="8"><span class="st">  </span><span class="kw">right_join</span>(study.panel) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb2-9" title="9"><span class="st">  </span><span class="kw">group_by</span>(interval60, TRACTCE10) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb2-10" title="10"><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">Call_Count =</span> <span class="kw">sum</span>(Call_Counter, <span class="dt">na.rm=</span>T))</a>
-<a class="sourceLine" id="cb2-11" title="11"></a>
-<a class="sourceLine" id="cb2-12" title="12">call.panel<span class="op">$</span>interval60<span class="fl">.3</span> &lt;-<span class="st"> </span><span class="kw">parse_date_time</span>(call.panel<span class="op">$</span>interval60, <span class="dt">orders =</span> <span class="st">&quot;mdy hm&quot;</span>)</a>
-<a class="sourceLine" id="cb2-13" title="13"></a>
-<a class="sourceLine" id="cb2-14" title="14">call.panel<span class="op">$</span>week &lt;-<span class="st"> </span><span class="kw">week</span>(call.panel<span class="op">$</span>interval60<span class="fl">.3</span>)</a>
-<a class="sourceLine" id="cb2-15" title="15">call.panel<span class="op">$</span>dotw &lt;-<span class="st"> </span><span class="kw">wday</span>(call.panel<span class="op">$</span>interval60<span class="fl">.3</span>)</a></code></pre></div>
+<pre class="r"><code>study.panel &lt;- 
+  expand.grid(interval60 = unique(calls$interval60),
+              TRACTCE10 = unique(calls$TRACTCE10))
+
+call.panel &lt;- 
+  calls %&gt;%
+  mutate(Call_Counter = 1) %&gt;% 
+  right_join(study.panel) %&gt;% 
+  group_by(interval60, TRACTCE10) %&gt;%
+  summarize(Call_Count = sum(Call_Counter, na.rm=T))
+
+call.panel$interval60.3 &lt;- parse_date_time(call.panel$interval60, orders = &quot;mdy hm&quot;)
+
+call.panel$week &lt;- week(call.panel$interval60.3)
+call.panel$dotw &lt;- wday(call.panel$interval60.3)</code></pre>
 <p>To incorporate the weather data to the panel, the time field is cleaned up with the <code>is.POSIXct</code> function and joined to the <code>call.panel</code>,</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">is.POSIXct</span>(weather.Panel<span class="op">$</span>interval60<span class="fl">.3</span>)</a></code></pre></div>
+<pre class="r"><code>is.POSIXct(weather.Panel$interval60.3)</code></pre>
 <pre><code>## [1] FALSE</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">is.POSIXct</span>(call.panel<span class="op">$</span>interval60<span class="fl">.3</span>)</a></code></pre></div>
+<pre class="r"><code>is.POSIXct(call.panel$interval60.3)</code></pre>
 <pre><code>## [1] TRUE</code></pre>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">weather.Panel<span class="op">$</span>interval60<span class="fl">.3</span> &lt;-<span class="st"> </span><span class="kw">parse_date_time</span>(weather.Panel<span class="op">$</span>interval60, <span class="dt">orders =</span> <span class="st">&quot;ymd hms&quot;</span>)</a>
-<a class="sourceLine" id="cb7-2" title="2"></a>
-<a class="sourceLine" id="cb7-3" title="3">call.panel &lt;-<span class="st"> </span><span class="kw">left_join</span>(call.panel, weather.Panel, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;interval60.3&quot;</span>, <span class="st">&quot;interval60.3&quot;</span>))</a></code></pre></div>
+<pre class="r"><code>weather.Panel$interval60.3 &lt;- parse_date_time(weather.Panel$interval60, orders = &quot;ymd hms&quot;)
+
+call.panel &lt;- left_join(call.panel, weather.Panel, by = c(&quot;interval60.3&quot;, &quot;interval60.3&quot;))</code></pre>
 <p>Next, to predict time series trends, time lags are incorporated into the model. Time lags provide additional insight into call volume during a given time period through the comparison of the hours before and after high-volume time periods. Because this sample set contains a holiday that may affect EMS call volume (Father’s Day), holiday features were incorporated into the model as fixed effects.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1">call.panel &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb8-2" title="2"><span class="st">  </span>call.panel <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb8-3" title="3"><span class="st">  </span><span class="kw">arrange</span>(TRACTCE10, interval60<span class="fl">.3</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb8-4" title="4"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">lagHour =</span> dplyr<span class="op">::</span><span class="kw">lag</span>(Call_Count,<span class="dv">1</span>),</a>
-<a class="sourceLine" id="cb8-5" title="5">         <span class="dt">lag2Hours =</span> dplyr<span class="op">::</span><span class="kw">lag</span>(Call_Count,<span class="dv">2</span>),</a>
-<a class="sourceLine" id="cb8-6" title="6">         <span class="dt">lag3Hours =</span> dplyr<span class="op">::</span><span class="kw">lag</span>(Call_Count,<span class="dv">3</span>),</a>
-<a class="sourceLine" id="cb8-7" title="7">         <span class="dt">lag4Hours =</span> dplyr<span class="op">::</span><span class="kw">lag</span>(Call_Count,<span class="dv">4</span>),</a>
-<a class="sourceLine" id="cb8-8" title="8">         <span class="dt">lag12Hours =</span> dplyr<span class="op">::</span><span class="kw">lag</span>(Call_Count,<span class="dv">12</span>),</a>
-<a class="sourceLine" id="cb8-9" title="9">         <span class="dt">lag1day =</span> dplyr<span class="op">::</span><span class="kw">lag</span>(Call_Count,<span class="dv">24</span>),</a>
-<a class="sourceLine" id="cb8-10" title="10">         <span class="dt">holiday =</span> <span class="kw">as.factor</span>(<span class="kw">ifelse</span>(<span class="kw">yday</span>(interval60<span class="fl">.3</span>) <span class="op">==</span><span class="st"> </span><span class="dv">171</span>,<span class="dv">1</span>,<span class="dv">0</span>))) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-11" title="11"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">day =</span> <span class="kw">yday</span>(interval60<span class="fl">.3</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-12" title="12"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">holidayLag =</span> <span class="kw">case_when</span>(</a>
-<a class="sourceLine" id="cb8-13" title="13">                                dplyr<span class="op">::</span><span class="kw">lead</span>(holiday, <span class="dv">1</span>) <span class="op">==</span><span class="st"> </span><span class="dv">1</span> <span class="op">~</span><span class="st"> &quot;MinusOneDay&quot;</span>),</a>
-<a class="sourceLine" id="cb8-14" title="14">         <span class="dt">holidayLag =</span> <span class="kw">replace_na</span>(holidayLag, <span class="dv">0</span>))</a>
-<a class="sourceLine" id="cb8-15" title="15"></a>
-<a class="sourceLine" id="cb8-16" title="16">dplyr<span class="op">::</span><span class="kw">select</span>(<span class="kw">st_set_geometry</span>(call.panel, <span class="ot">NULL</span>), </a>
-<a class="sourceLine" id="cb8-17" title="17">              interval60<span class="fl">.3</span>, TRACTCE10, Call_Count, </a>
-<a class="sourceLine" id="cb8-18" title="18">              lagHour, lag2Hours)</a></code></pre></div>
+<pre class="r"><code>call.panel &lt;- 
+  call.panel %&gt;% 
+  arrange(TRACTCE10, interval60.3) %&gt;% 
+  mutate(lagHour = dplyr::lag(Call_Count,1),
+         lag2Hours = dplyr::lag(Call_Count,2),
+         lag3Hours = dplyr::lag(Call_Count,3),
+         lag4Hours = dplyr::lag(Call_Count,4),
+         lag12Hours = dplyr::lag(Call_Count,12),
+         lag1day = dplyr::lag(Call_Count,24),
+         holiday = as.factor(ifelse(yday(interval60.3) == 171,1,0))) %&gt;%
+  mutate(day = yday(interval60.3)) %&gt;%
+  mutate(holidayLag = case_when(
+                                dplyr::lead(holiday, 1) == 1 ~ &quot;MinusOneDay&quot;),
+         holidayLag = replace_na(holidayLag, 0))
+
+dplyr::select(st_set_geometry(call.panel, NULL), 
+              interval60.3, TRACTCE10, Call_Count, 
+              lagHour, lag2Hours)</code></pre>
 <pre><code>## # A tibble: 17,664 x 6
 ## # Groups:   interval60.x [184]
 ##    interval60.x    interval60.3        TRACTCE10 Call_Count lagHour lag2Hours
@@ -615,55 +533,55 @@ div.tocify {
 <div id="the-final-model" class="section level2">
 <h2><span class="header-section-number">3.2</span> The Final Model</h2>
 <p>To train and test the model, <code>call.Train</code> and <code>call.Test</code> datasets were formed. Four regression models were developed using an increasing amount of indicators. The final two include time lag features.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">call.panel<span class="op">$</span>tract2 &lt;-<span class="st"> </span><span class="kw">as.character</span>(call.panel<span class="op">$</span>TRACTCE10)</a>
-<a class="sourceLine" id="cb10-2" title="2">call.Train &lt;-<span class="st"> </span><span class="kw">subset</span>(call.panel, week <span class="op">==</span><span class="st"> </span><span class="dv">24</span> <span class="op">&amp;</span><span class="st"> </span>dotw <span class="op">&lt;</span><span class="st"> </span><span class="dv">7</span>)</a>
-<a class="sourceLine" id="cb10-3" title="3">call.Test &lt;-<span class="st"> </span><span class="kw">filter</span>(call.panel, day <span class="op">&gt;</span><span class="st"> </span><span class="dv">169</span>)</a>
-<a class="sourceLine" id="cb10-4" title="4"></a>
-<a class="sourceLine" id="cb10-5" title="5">reg1 &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb10-6" title="6"><span class="st">  </span><span class="kw">lm</span>(Call_Count <span class="op">~</span><span class="st">  </span><span class="kw">hour</span>(interval60<span class="fl">.3</span>) <span class="op">+</span><span class="st"> </span>dotw ,  <span class="dt">data=</span>call.Train)</a>
-<a class="sourceLine" id="cb10-7" title="7"></a>
-<a class="sourceLine" id="cb10-8" title="8">reg2 &lt;-</a>
-<a class="sourceLine" id="cb10-9" title="9"><span class="st">  </span><span class="kw">lm</span>(Call_Count <span class="op">~</span><span class="st"> </span><span class="kw">hour</span>(interval60<span class="fl">.3</span>) <span class="op">+</span><span class="st"> </span>dotw <span class="op">+</span><span class="st"> </span>tract2, <span class="dt">data =</span> call.Train)</a>
-<a class="sourceLine" id="cb10-10" title="10"></a>
-<a class="sourceLine" id="cb10-11" title="11">reg3 &lt;-</a>
-<a class="sourceLine" id="cb10-12" title="12"><span class="st">  </span><span class="kw">lm</span>(Call_Count <span class="op">~</span><span class="st"> </span><span class="kw">hour</span>(interval60<span class="fl">.3</span>) <span class="op">+</span><span class="st"> </span>dotw <span class="op">+</span><span class="st"> </span>tract2 <span class="op">+</span><span class="st"> </span>lagHour <span class="op">+</span>lag2Hours <span class="op">+</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb10-13" title="13"><span class="st">       </span>lag3Hours <span class="op">+</span><span class="st"> </span>lag4Hours <span class="op">+</span><span class="st"> </span>lag12Hours, <span class="dt">data =</span> call.Train)</a>
-<a class="sourceLine" id="cb10-14" title="14"></a>
-<a class="sourceLine" id="cb10-15" title="15">reg4 &lt;-<span class="st"> </span><span class="kw">lm</span>(Call_Count <span class="op">~</span><span class="st"> </span><span class="kw">hour</span>(interval60<span class="fl">.3</span>) <span class="op">+</span><span class="st"> </span>dotw <span class="op">+</span><span class="st"> </span>tract2 <span class="op">+</span><span class="st"> </span>lagHour <span class="op">+</span>lag2Hours <span class="op">+</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb10-16" title="16"><span class="st">             </span>lag3Hours <span class="op">+</span><span class="st"> </span>lag4Hours <span class="op">+</span><span class="st"> </span>lag12Hours <span class="op">+</span><span class="st"> </span>Temperature <span class="op">+</span><span class="st"> </span>Precipitation <span class="op">+</span><span class="st"> </span>Wind_Speed, <span class="dt">data =</span> call.Train)</a></code></pre></div>
+<pre class="r"><code>call.panel$tract2 &lt;- as.character(call.panel$TRACTCE10)
+call.Train &lt;- subset(call.panel, week == 24 &amp; dotw &lt; 7)
+call.Test &lt;- filter(call.panel, day &gt; 169)
+
+reg1 &lt;- 
+  lm(Call_Count ~  hour(interval60.3) + dotw ,  data=call.Train)
+
+reg2 &lt;-
+  lm(Call_Count ~ hour(interval60.3) + dotw + tract2, data = call.Train)
+
+reg3 &lt;-
+  lm(Call_Count ~ hour(interval60.3) + dotw + tract2 + lagHour +lag2Hours + 
+       lag3Hours + lag4Hours + lag12Hours, data = call.Train)
+
+reg4 &lt;- lm(Call_Count ~ hour(interval60.3) + dotw + tract2 + lagHour +lag2Hours + 
+             lag3Hours + lag4Hours + lag12Hours + Temperature + Precipitation + Wind_Speed, data = call.Train)</code></pre>
 </div>
 <div id="testing-and-validating-the-model" class="section level2">
 <h2><span class="header-section-number">3.3</span> Testing and Validating the Model</h2>
 <p>To test the model, a nested data frame of the test data by week. A functin is created (<code>model_pred</code>) that can be mapped onto each data frame of the nested structure.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1">call.Test.weekNest &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb11-2" title="2"><span class="st">  </span>call.Test <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb11-3" title="3"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(lagHour))<span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb11-4" title="4"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(lag2Hours))<span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb11-5" title="5"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(lag3Hours))<span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb11-6" title="6"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(lag4Hours))<span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb11-7" title="7"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(lag12Hours))<span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb11-8" title="8"><span class="st">  </span><span class="kw">nest</span>(<span class="op">-</span>week)</a>
-<a class="sourceLine" id="cb11-9" title="9"></a>
-<a class="sourceLine" id="cb11-10" title="10">model_pred &lt;-<span class="st"> </span><span class="cf">function</span>(dat, fit){</a>
-<a class="sourceLine" id="cb11-11" title="11">  pred &lt;-<span class="st"> </span><span class="kw">predict</span>(fit, <span class="dt">newdata =</span> dat)</a>
-<a class="sourceLine" id="cb11-12" title="12">  }</a></code></pre></div>
+<pre class="r"><code>call.Test.weekNest &lt;- 
+  call.Test %&gt;%
+  filter(!is.na(lagHour))%&gt;%
+  filter(!is.na(lag2Hours))%&gt;%
+  filter(!is.na(lag3Hours))%&gt;%
+  filter(!is.na(lag4Hours))%&gt;%
+  filter(!is.na(lag12Hours))%&gt;%
+  nest(-week)
+
+model_pred &lt;- function(dat, fit){
+  pred &lt;- predict(fit, newdata = dat)
+  }</code></pre>
 <p>The predictions can then be run and summarized as follows. The results show that 0.0531 calls take place per hour per census tract in Virginia Beach. This number seems lower than expected, which can be explained by the limited number of records in the dataset.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1">week_predictions &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb12-2" title="2"><span class="st">  </span>call.Test.weekNest <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb12-3" title="3"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">ATime =</span> <span class="kw">map</span>(<span class="dt">.x =</span> data, <span class="dt">fit =</span> reg1, <span class="dt">.f =</span> model_pred),</a>
-<a class="sourceLine" id="cb12-4" title="4">         <span class="dt">BTime_Space =</span> <span class="kw">map</span>(<span class="dt">.x =</span> data, <span class="dt">fit =</span> reg2, <span class="dt">.f =</span> model_pred),</a>
-<a class="sourceLine" id="cb12-5" title="5">         <span class="dt">CTime_Space_TimeLag =</span> <span class="kw">map</span>(<span class="dt">.x =</span> data, <span class="dt">fit =</span> reg3, <span class="dt">.f =</span> model_pred),</a>
-<a class="sourceLine" id="cb12-6" title="6">         <span class="dt">DTime_Space_TimeLag_Weather =</span> <span class="kw">map</span>(<span class="dt">.x =</span> data, <span class="dt">fit =</span> reg4, <span class="dt">.f =</span> model_pred))</a>
-<a class="sourceLine" id="cb12-7" title="7"></a>
-<a class="sourceLine" id="cb12-8" title="8">week_predictions &lt;-</a>
-<a class="sourceLine" id="cb12-9" title="9"><span class="st">  </span>week_predictions <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb12-10" title="10"><span class="st">  </span><span class="kw">gather</span>(Regression, Prediction, <span class="op">-</span>data, <span class="op">-</span>week) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb12-11" title="11"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Observed =</span> <span class="kw">map</span>(data, pull, Call_Count),</a>
-<a class="sourceLine" id="cb12-12" title="12">         <span class="dt">Absolute_Error =</span> <span class="kw">map2</span>(Observed, Prediction,  <span class="op">~</span><span class="st"> </span><span class="kw">abs</span>(.x <span class="op">-</span><span class="st"> </span>.y)),</a>
-<a class="sourceLine" id="cb12-13" title="13">         <span class="dt">MAE =</span> <span class="kw">map_dbl</span>(Absolute_Error, mean, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),</a>
-<a class="sourceLine" id="cb12-14" title="14">         <span class="dt">sd_AE =</span> <span class="kw">map_dbl</span>(Absolute_Error, sd, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</a>
-<a class="sourceLine" id="cb12-15" title="15"></a>
-<a class="sourceLine" id="cb12-16" title="16">week_predictions</a></code></pre></div>
+<pre class="r"><code>week_predictions &lt;- 
+  call.Test.weekNest %&gt;% 
+  mutate(ATime = map(.x = data, fit = reg1, .f = model_pred),
+         BTime_Space = map(.x = data, fit = reg2, .f = model_pred),
+         CTime_Space_TimeLag = map(.x = data, fit = reg3, .f = model_pred),
+         DTime_Space_TimeLag_Weather = map(.x = data, fit = reg4, .f = model_pred))
+
+week_predictions &lt;-
+  week_predictions %&gt;% 
+  gather(Regression, Prediction, -data, -week) %&gt;%
+  mutate(Observed = map(data, pull, Call_Count),
+         Absolute_Error = map2(Observed, Prediction,  ~ abs(.x - .y)),
+         MAE = map_dbl(Absolute_Error, mean, na.rm = TRUE),
+         sd_AE = map_dbl(Absolute_Error, sd, na.rm = TRUE))
+
+week_predictions</code></pre>
 <pre><code>## # A tibble: 4 x 8
 ##    week data      Regression     Prediction Observed Absolute_Error    MAE sd_AE
 ##   &lt;dbl&gt; &lt;list&gt;    &lt;chr&gt;          &lt;list&gt;     &lt;list&gt;   &lt;list&gt;          &lt;dbl&gt; &lt;dbl&gt;
@@ -671,9 +589,9 @@ div.tocify {
 ## 2    25 &lt;tibble ~ BTime_Space    &lt;dbl [6,0~ &lt;dbl [6~ &lt;dbl [6,048]&gt;  0.0966 0.214
 ## 3    25 &lt;tibble ~ CTime_Space_T~ &lt;dbl [6,0~ &lt;dbl [6~ &lt;dbl [6,048]&gt;  0.0967 0.214
 ## 4    25 &lt;tibble ~ DTime_Space_T~ &lt;dbl [6,0~ &lt;dbl [6~ &lt;dbl [6,048]&gt;  0.0984 0.214</code></pre>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1">call.Test.weekNest <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb14-2" title="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Call_Count =</span> <span class="kw">map</span>(data, pull, Call_Count),</a>
-<a class="sourceLine" id="cb14-3" title="3">         <span class="dt">Mean_Call_Count =</span> <span class="kw">map_dbl</span>(Call_Count, mean))</a></code></pre></div>
+<pre class="r"><code>call.Test.weekNest %&gt;%
+  mutate(Call_Count = map(data, pull, Call_Count),
+         Mean_Call_Count = map_dbl(Call_Count, mean))</code></pre>
 <pre><code>## # A tibble: 1 x 4
 ##    week data                  Call_Count    Mean_Call_Count
 ##   &lt;dbl&gt; &lt;list&gt;                &lt;list&gt;                  &lt;dbl&gt;
