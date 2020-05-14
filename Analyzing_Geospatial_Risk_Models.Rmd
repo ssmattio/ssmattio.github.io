@@ -4,6 +4,7 @@ author: "Sara Mattio"
 date: "11/8/2019"
 output:
   html_document:
+    theme: united
     toc: true
     toc_float: true
     code_folding: hide
