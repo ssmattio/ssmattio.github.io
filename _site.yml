@@ -9,6 +9,8 @@ navbar:
       href: Predicting_Home_Prices_SF.html
     - text: "Geospatial Risk Modeling"
       href: Analyzing_Geospatial_Risk_Models.html
+    - text: "Modeling Urban Growth"
+      href: Modeling_Urban_Growth.html
   right:
     - icon: fa-envelope fa-lg
       href: contact.html
