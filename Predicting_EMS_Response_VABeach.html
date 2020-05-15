@@ -365,6 +365,9 @@ div.tocify {
 <li>
   <a href="Analyzing_Geospatial_Risk_Models.html">Geospatial Risk Modeling</a>
 </li>
+<li>
+  <a href="Modeling_Urban_Growth.html">Modeling Urban Growth</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -483,14 +486,11 @@ call.panel$interval60.3 &lt;- parse_date_time(call.panel$interval60, orders = &q
 
 call.panel$week &lt;- week(call.panel$interval60.3)
 call.panel$dotw &lt;- wday(call.panel$interval60.3)</code></pre>
-<p>To incorporate the weather data to the panel, the time field is cleaned up with the <code>is.POSIXct</code> function and joined to the <code>call.panel</code>,</p>
-<pre class="r"><code>is.POSIXct(weather.Panel$interval60.3)</code></pre>
-<pre><code>## [1] FALSE</code></pre>
-<pre class="r"><code>is.POSIXct(call.panel$interval60.3)</code></pre>
-<pre><code>## [1] TRUE</code></pre>
+<p>To incorporate the weather data to the panel, the time field is cleaned up with the <code>is.POSIXct</code> function and joined to the <code>call.panel</code>.</p>
 <pre class="r"><code>weather.Panel$interval60.3 &lt;- parse_date_time(weather.Panel$interval60, orders = &quot;ymd hms&quot;)
 
 call.panel &lt;- left_join(call.panel, weather.Panel, by = c(&quot;interval60.3&quot;, &quot;interval60.3&quot;))</code></pre>
+
 <p>Next, to predict time series trends, time lags are incorporated into the model. Time lags provide additional insight into call volume during a given time period through the comparison of the hours before and after high-volume time periods. Because this sample set contains a holiday that may affect EMS call volume (Father’s Day), holiday features were incorporated into the model as fixed effects.</p>
 <pre class="r"><code>call.panel &lt;- 
   call.panel %&gt;% 
@@ -526,9 +526,9 @@ dplyr::select(st_set_geometry(call.panel, NULL),
 ## 10 6/14/2010 10:00 2010-06-14 10:00:00 040000             0      NA        NA
 ## # ... with 17,654 more rows</code></pre>
 <p>By breaking down the number of calls by day, several patterns occur. During the weekday, fewer calls take place in the early morning, while volume seems to increase mid-day. On the weekends, volume appears to be lower and steadier. For the last day of the set, only a limited amount of calls were provided in the dataset, resulting in a perceived abnormal volume.</p>
-<p><img src="Predicting_EMS_Response_VABeach_files/figure-html/unnamed-chunk-13-1.png" width="1536" /></p>
+<p><img src="Predicting_EMS_Response_VABeach_files/figure-html/unnamed-chunk-14-1.png" width="1536" /></p>
 <p>The plots below explore the relationship between EMS call counts and time lag functions. Based on the close correlation of these features in all time lag functions, these functions should serve as a strong predictor.</p>
-<p><img src="Predicting_EMS_Response_VABeach_files/figure-html/unnamed-chunk-14-1.png" width="1152" /></p>
+<p><img src="Predicting_EMS_Response_VABeach_files/figure-html/unnamed-chunk-15-1.png" width="1152" /></p>
 </div>
 <div id="the-final-model" class="section level2">
 <h2><span class="header-section-number">3.2</span> The Final Model</h2>
@@ -549,6 +549,7 @@ reg3 &lt;-
 
 reg4 &lt;- lm(Call_Count ~ hour(interval60.3) + dotw + tract2 + lagHour +lag2Hours + 
              lag3Hours + lag4Hours + lag12Hours + Temperature + Precipitation + Wind_Speed, data = call.Train)</code></pre>
+
 </div>
 <div id="testing-and-validating-the-model" class="section level2">
 <h2><span class="header-section-number">3.3</span> Testing and Validating the Model</h2>
@@ -565,6 +566,7 @@ reg4 &lt;- lm(Call_Count ~ hour(interval60.3) + dotw + tract2 + lagHour +lag2Hou
 model_pred &lt;- function(dat, fit){
   pred &lt;- predict(fit, newdata = dat)
   }</code></pre>
+
 <p>The predictions can then be run and summarized as follows. The results show that 0.0531 calls take place per hour per census tract in Virginia Beach. This number seems lower than expected, which can be explained by the limited number of records in the dataset.</p>
 <pre class="r"><code>week_predictions &lt;- 
   call.Test.weekNest %&gt;% 
@@ -596,16 +598,18 @@ week_predictions</code></pre>
 ##    week data                  Call_Count    Mean_Call_Count
 ##   &lt;dbl&gt; &lt;list&gt;                &lt;list&gt;                  &lt;dbl&gt;
 ## 1    25 &lt;tibble [6,048 x 20]&gt; &lt;dbl [6,048]&gt;          0.0531</code></pre>
+
 <p>To analyze the model further, the Mean Absolute Errors (MAE) for each model can be shown by week. It appears that the differences among the four models are minimal, although incorporating weather features improved the model slightly. Time lag features appears to have worsened the model slightly; however the difference is minimal.</p>
-<p><img src="Predicting_EMS_Response_VABeach_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
-<p>Finally, the mean and predicteed observed volume of calls can be observed to compare goodness of fit. While Model D appears to be somewhat closely aligned, the other models do not match the predicted observations as closely as expected. The correlation plots for calls and time lag do not seems to be as strong of a predictor as originally suggested.</p>
 <p><img src="Predicting_EMS_Response_VABeach_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p>Finally, the mean and predicteed observed volume of calls can be observed to compare goodness of fit. While Model D appears to be somewhat closely aligned, the other models do not match the predicted observations as closely as expected. The correlation plots for calls and time lag do not seems to be as strong of a predictor as originally suggested.</p>
+<p><img src="Predicting_EMS_Response_VABeach_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
 <p>This analysis intended to include validation tests by space; however, the model produced too many <code>NA</code> values and results could not be mapped.</p>
 </div>
 </div>
 <div id="conclusion" class="section level1">
 <h1><span class="header-section-number">4</span> Conclusion</h1>
-<p>The idea behind this analysis was to explore data related to EMS call volume and utilize these features in a model which would ultimately be tested to determine accuracy and generalizability. While Model D was somewhat accurate in its predictions with an average MAE of 0.0984, compared to the average MAE of the tracts of 0.0531, the model’s MAE is not as strong. It is very surprising that models with time lag features did not show an improvement over those without time lag features, especially considering the correlation values for time lag features were above 0.90. Identifying the source of this problem would create the most substantial improvement in this model. As far as the generalizability of the model, the model is not accurate enough to assess its generalizability. Despite the initial shortcomings of the model at this stage, there is strong potential for improvement in further stages of development. First, a significantly larger sample size should be used. Without the API from the City’s Open Data Portal, it was challenging to properly assess a wide selection of data. Although geocoded data was provided to us by another group, the datetime formatting created a lot of issues and we chose to use the data we already had saved in our environment instead. Having at least 10,000 records would have allowed for a more thorough analysis. The time period used was also problematic. Unfortunately, the only data available to us was from a 9-day time period in June 2010. Creating a time-space model with 9 days worth of data was challenging and ultimately not useful in creating a generalizable model. In future stages of development of this model, using a larger, more recent dataset could create a more robust model.</p>
+<p>The idea behind this analysis was to explore data related to EMS call volume and utilize these features in a model which would ultimately be tested to determine accuracy and generalizability. While Model D was somewhat accurate in its predictions with an average MAE of 0.0984, compared to the average MAE of the tracts of 0.0531, the model’s MAE is not as strong. It is very surprising that models with time lag features did not show an improvement over those without time lag features, especially considering the correlation values for time lag features were above 0.90. Identifying the source of this problem would create the most substantial improvement in this model.</p>
+<p>As far as the generalizability of the model, the model is not accurate enough to assess its generalizability. Despite the initial shortcomings of the model at this stage, there is strong potential for improvement in further stages of development. First, a significantly larger sample size should be used. Without the API from the City’s Open Data Portal, it was challenging to properly assess a wide selection of data. Although geocoded data was provided to us by another group, the datetime formatting created a lot of issues and we chose to use the data we already had saved in our environment instead. Having at least 10,000 records would have allowed for a more thorough analysis. The time period used was also problematic. Unfortunately, the only data available to us was from a 9-day time period in June 2010. Creating a time-space model with 9 days worth of data was challenging and ultimately not useful in creating a generalizable model. In future stages of development of this model, using a larger, more recent dataset could create a more robust model.</p>
 </div>
 
 

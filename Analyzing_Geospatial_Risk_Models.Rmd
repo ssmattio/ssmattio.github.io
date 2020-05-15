@@ -1,5 +1,5 @@
 ---
-title: 'Assignment 10: Predictive Modeling & Geospatial Risk Models - Predicting Assault in Chicago'
+title: 'Predictive Modeling & Geospatial Risk Models - Predicting Assault in Chicago'
 author: "Sara Mattio"
 date: "11/8/2019"
 output:
@@ -11,6 +11,10 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+``` {r include=FALSE}
 library(tidyverse)
 library(sf)
 library(QuantPsyc)
@@ -42,8 +46,9 @@ mapTheme <- function(base_size = 12) {
     panel.border = element_rect(colour = "black", fill=NA, size=2)
   )
 }
+```
 
-#police districts and beats
+``` {r include = FALSE}
 policeDistricts <- 
   st_read("https://data.cityofchicago.org/api/geospatial/fthy-xz3r?method=export&format=GeoJSON") %>%
   st_transform(crs=102271) %>%
@@ -57,10 +62,10 @@ policeBeats <-
 bothPoliceUnits <- rbind(mutate(policeDistricts, Legend = "Police Districts"), 
                          mutate(policeBeats, Legend = "Police Beats"))
 
-#bring in Chicago map and create fishnet
 chicagoBoundary <- 
   st_read("C:/Users/ssmat/Desktop/MUSA507/Week10/riskPrediction_data/chicagoBoundary.shp") %>%
   st_transform(crs=102271)
+
 fishnet <- 
   st_make_grid(chicagoBoundary, cellsize = 500) %>%
   st_sf()
@@ -70,7 +75,6 @@ fishnet <-
   mutate(uniqueID = rownames(.)) %>%
   dplyr::select(uniqueID)
 
-#import crime data
 assault <- 
   read.socrata("https://data.cityofchicago.org/Public-Safety/Crimes-2017/d62x-nvdr") %>% 
   filter(Primary.Type == "ASSAULT" & 
@@ -84,7 +88,6 @@ assault <-
   st_transform(102271) %>% 
   distinct()
 
-#joining assaults to fishnet
 crime_net <- 
   assault %>% 
   dplyr::select() %>% 
@@ -93,7 +96,9 @@ crime_net <-
   mutate(countAssault = ifelse(is.na(countAssault), 0, countAssault),
          uniqueID = rownames(.),
          cvID = sample(round(nrow(fishnet) / 24), size=nrow(fishnet), replace = TRUE))
+```
 
+``` {r include=FALSE}
 #data wrangling
 abandonCars <- 
   read.socrata("https://data.cityofchicago.org/Service-Requests/311-Service-Requests-Abandoned-Vehicles/3c9v-pnva") %>%
@@ -193,9 +198,9 @@ vars_net <-
   st_sf() %>%
   dplyr::select(-`<NA>`) %>%
   na.omit()
+```
 
-
-#nearest neighbor features
+``` {r include=FALSE}
 nn_function <- function(measureFrom,measureTo,k) {
   measureFrom_Matrix <-
     as.matrix(measureFrom)
@@ -217,7 +222,6 @@ nn_function <- function(measureFrom,measureTo,k) {
   return(output)  
 }
 
-#k-folds
 vars_net$Abandoned_Buildings.nn =
   nn_function(st_coordinates(st_centroid(vars_net)), st_coordinates(abandonBuildings), 3)
 
@@ -242,7 +246,6 @@ vars_net$Sanitation.nn =
 vars_net$Low_Traffic_Counts.nn =
   nn_function(st_coordinates(st_centroid(vars_net)), st_coordinates(LowTrafficCounts), 3)
 
-#nearest neighbor points plotted
 vars_net.long.nn <- 
   vars_net %>%
   dplyr::select(ends_with(".nn")) %>%
@@ -261,7 +264,6 @@ for(i in vars){
 
 do.call(grid.arrange,c(mapList, ncol =2, top = "Nearest Neighbor risk Factors by Fishnet"))
 
-#measure distance to one point
 loopPoint <-
   neighborhoods %>%
   filter(name == "Loop") %>%
@@ -274,7 +276,6 @@ vars_net$loopDistance =
 final_net <-
   left_join(crime_net, st_set_geometry(vars_net, NULL), by="uniqueID") 
 
-#join neighborhood and police district
 final_net <-
   st_centroid(final_net) %>%
   st_join(., dplyr::select(neighborhoods, name)) %>%
@@ -293,11 +294,9 @@ dplyr::select(final_net, name, District) %>%
   labs(title = "Aggregate Areas") +
   mapTheme() + theme(legend.position = "none")
 
-#queen neighbors and visualization
 final_net.nb <- poly2nb(final_net, queen=TRUE)
 final_net.weights <- nb2listw(final_net.nb, style="W", zero.policy=TRUE)
 
-#local Moran's I statistics
 final_net.localMorans <- 
   cbind(
     as.data.frame(localmoran(final_net$countAssault, final_net.weights)),
@@ -312,7 +311,6 @@ final_net.localMorans <-
 vars <- unique(final_net.localMorans$Variable)
 varList <- list()
 
-#calculation of local moran's i
 final_net <-
   final_net %>% 
   mutate(Assault.isSig = ifelse(localmoran(final_net$countAssault, 
@@ -321,7 +319,6 @@ final_net <-
                                            st_coordinates(st_centroid(
                                              filter(final_net, Assault.isSig == 1))), 1 ))
 
-#correlation tests
 correlation.long <-
   st_set_geometry(final_net, NULL) %>%
   dplyr::select(-uniqueID, -cvID, -loopDistance, -name, -District) %>%
@@ -332,7 +329,6 @@ correlation.cor <-
   group_by(Variable) %>%
   summarize(correlation = cor(Value, countAssault, use = "complete.obs"))
 
-#two different specifications (with and without spatial structure features)
 reg.vars <- c("Abandoned_Buildings.nn", "Abandoned_Cars.nn", "Graffiti.nn", 
               "Liquor_Retail.nn", "Street_Lights_Out.nn", "Alley_Lights_Out.nn", "Sanitation.nn", 
               "Low_Traffic_Counts.nn", "loopDistance")
@@ -340,8 +336,9 @@ reg.vars <- c("Abandoned_Buildings.nn", "Abandoned_Cars.nn", "Graffiti.nn",
 reg.ss.vars <- c("Abandoned_Buildings.nn", "Abandoned_Cars.nn", "Graffiti.nn", "Liquor_Retail.nn", 
                  "Street_Lights_Out.nn", "Alley_Lights_Out.nn", "Sanitation.nn", "Low_Traffic_Counts.nn", 
                  "loopDistance", "Assault.isSig", "Assault.isSig.dist")
+```
 
-#cross validation
+``` {r include=FALSE}
 crossValidate <- function(dataset, id, dependentVariable, indVariables) {
   
   allPredictions <- data.frame()
@@ -372,7 +369,20 @@ crossValidate <- function(dataset, id, dependentVariable, indVariables) {
   return(st_sf(allPredictions))
 }
 
-#four different regressions
+tracts17 <- 
+  get_acs(geography = "tract", variables = c("B01001_001E","B01001A_001E"), 
+          year = 2017, state=17, county=031, geometry=T) %>%
+  st_transform(102271)  %>% 
+  dplyr::select(variable, estimate, GEOID) %>%
+  spread(variable, estimate) %>%
+  rename(TotalPop = B01001_001,
+         NumberWhites = B01001A_001) %>%
+  mutate(percentWhite = NumberWhites / TotalPop,
+         raceContext = ifelse(percentWhite > .5, "Majority_White", "Majority_Non_White")) %>%
+  .[neighborhoods,]
+```
+
+``` {r include=FALSE}
 reg.cv <- crossValidate(
   dataset = final_net,
   id = "cvID",
@@ -401,7 +411,6 @@ reg.ss.spatialCV <- crossValidate(
   indVariables = reg.ss.vars) %>%
   dplyr::select(cvID = name, countAssault, Prediction, geometry)
 
-#regression data frame
 reg.summary <- 
   rbind(
     mutate(reg.cv,           Error = countAssault - Prediction,
@@ -416,18 +425,6 @@ reg.summary <-
     mutate(reg.ss.spatialCV, Error = countAssault - Prediction,
                              Regression = "Spatial LOGO-CV: Spatial Structure")) %>%
     st_sf() 
-
-tracts17 <- 
-  get_acs(geography = "tract", variables = c("B01001_001E","B01001A_001E"), 
-          year = 2017, state=17, county=031, geometry=T) %>%
-  st_transform(102271)  %>% 
-  dplyr::select(variable, estimate, GEOID) %>%
-  spread(variable, estimate) %>%
-  rename(TotalPop = B01001_001,
-         NumberWhites = B01001A_001) %>%
-  mutate(percentWhite = NumberWhites / TotalPop,
-         raceContext = ifelse(percentWhite > .5, "Majority_White", "Majority_Non_White")) %>%
-  .[neighborhoods,]
 
 final_reg <- 
   filter(reg.summary, Regression == "Spatial LOGO-CV: Spatial Structure" |
@@ -489,8 +486,10 @@ Spatial risk models have become more utilized in the public sector to improve cu
 
 ## Mapping Aggravated Assault in Chicago
 
-The map below shows the location of reported cases of assault in Chicago from 2017. In this model, it is likely that a reporting bias may exist in low-income, non-white areas where there is a higher level of mistrust of public safety officers. Therefore, it is more likely that cases of assault where reported in middle and higher income neighborhoods where residents are majority white. 
-```{r}
+The map below shows the location of reported cases of assault in Chicago from 2017. In this model, it is likely that a reporting bias may exist in low-income, non-white areas where there is a higher level of mistrust of public safety officers. Therefore, it is more likely that cases of assault where reported in middle and higher income neighborhoods where residents are majority white.
+\s\s
+
+```{r echo=FALSE, message = FALSE, warning = FALSE}
 ggplot() + 
   geom_sf(data = chicagoBoundary) +
   geom_sf(data = assault, colour="red", size=0.1, show.legend = "point") +
@@ -500,7 +499,8 @@ ggplot() +
 
 
 To begin developing a prediction model, assault features are mapped with a fishnet to create a count of aggravated assault by fishnet.
-```{r}
+
+``` {r}
 crime_net <- 
   assault %>% 
   dplyr::select() %>% 
@@ -509,8 +509,9 @@ crime_net <-
   mutate(countAssault = ifelse(is.na(countAssault), 0, countAssault),
          uniqueID = rownames(.),
          cvID = sample(round(nrow(fishnet) / 24), size=nrow(fishnet), replace = TRUE))
+```
 
-#map results
+```{r echo=FALSE, message = FALSE, warning = FALSE}
 ggplot() +
   geom_sf(data = crime_net, aes(fill = countAssault)) +
   scale_fill_viridis() +
@@ -518,11 +519,10 @@ ggplot() +
   mapTheme()
 ```
 
-## Incorporating Risk Factors (Feature Engineering)
+## Incorporating Risk Factors
 
 A series of eight risk factors were wrangled to determine if assault is more prevalent when exposed to these characteristics. The risk factors are mapped below.
-```{r}
-#data wrangling
+```{r message = FALSE, warning = FALSE}
 vars_net <- 
   rbind(abandonCars,streetLightsOut,alleyLightsOut, abandonBuildings,
         liquorRetail, graffiti, sanitation, LowTrafficCounts) %>%
@@ -535,8 +535,9 @@ vars_net <-
   st_sf() %>%
   dplyr::select(-`<NA>`) %>%
   na.omit()
+```
 
-#map features
+``` {r echo=FALSE, message = FALSE, warning = FALSE, fig.height = 7}
 vars_net.long <- 
   vars_net %>%
   gather(Variable, value, -geometry, -uniqueID)
@@ -559,7 +560,7 @@ do.call(grid.arrange,c(mapList, ncol =2, top = "Risk Factors by Fishnet"))
 ## Local Moran’s I
 
 To better understand the spatial structure of aggravated assault, a Local Moran's I was utilized to visualize and test the correlation of `countAssault`. 
-```{r}
+```{r message = FALSE, warning = FALSE}
 final_net.localMorans <- 
   cbind(
     as.data.frame(localmoran(final_net$countAssault, final_net.weights)),
@@ -573,7 +574,9 @@ final_net.localMorans <-
 
 vars <- unique(final_net.localMorans$Variable)
 varList <- list()
+```
 
+``` {r echo=FALSE, message = FALSE, warning = FALSE, fig.width = 9}
 for(i in vars){
   varList[[i]] <- 
     ggplot() +
@@ -582,48 +585,48 @@ for(i in vars){
     labs(title=i) +
     mapTheme()}
 
-do.call(grid.arrange,c(varList, ncol = 4, top = "Local Morans I statistics, Aggravated Assault"))
+do.call(grid.arrange,c(varList, ncol = 4, top = "Local Morans I Statistics: Aggravated Assault"))
 ```
 
 
 ## Testing the Correlation of Features to Assault
 
 The charts below examine the correlation between each risk factor and the outcome, assault. Significant risk factors include abandoned buildings, alley light outages, and abandoned cars. In each of these factors, an increase in the risk factor results in an increase in assault and the futher the distance from these risk factors, the less occurrences of assault.
-```{r correlation plot, fig.height=15, fig.width=7.5}
+```{r echo=FALSE, message = FALSE, warning = FALSE, fig.height=15, fig.width=7.5}
 ggplot(correlation.long, aes(Value, countAssault)) +
   geom_point(size = 0.1) +
   geom_text(data = correlation.cor, aes(label = paste("r =", round(correlation, 2))),
             x=-Inf, y=Inf, vjust = 1, hjust = -.1) +
   geom_smooth(method = "lm", se = FALSE, colour = "#a2d7d8") +
   facet_wrap(~Variable, ncol = 2, scales = "free") +
-  labs(title = "Assault count as a function of risk factors")
+  labs(title = "Assault Count as a Function of Risk Factors")
 ```
 
 
 ## Poisson Regression Model and Results
 
 The bar chart below shows the distribution of assault by grid cell. Based on this distribution, it is clear that the Poisson Regression model is best suited for this case. 
-```{r}
+```{r echo=FALSE, message = FALSE, warning = FALSE}
 ggplot(final_net, aes(countAssault)) + 
   geom_histogram(binwidth = 1) +
-  labs(title = "Distribution of assault by grid cell")
+  labs(title = "Distribution of Assault by Grid Cell")
 ```
 
 
 The set of maps below shows mapped prediction errors by random k-fold and spatial cross validation. When comparing the two validation models, the lack of the spatial components seems to be resulting in increased errors. 
-```{r}
+```{r echo=FALSE, message = FALSE, warning = FALSE}
 filter(reg.summary, Regression == "Spatial LOGO-CV: Just Risk Factors" | 
          Regression == "Spatial LOGO-CV: Spatial Structure") %>%
   ggplot() +
   geom_sf(aes(fill = Error)) +
   facet_wrap(~Regression) +
   scale_fill_viridis() +
-  labs(title = "Assault errors by Regression") +
+  labs(title = "Assault Errors by Regression") +
   mapTheme()
 ```
 
 The Mean Absolute Error (MAE) for both cross-validation models is provided in the table below. The most significant takeaway from this table is the noticable difference in the absolute error -- incorporating spatial structure reduces the MAE.
-```{r}
+```{r echo=FALSE, message = FALSE, warning = FALSE}
 st_set_geometry(reg.summary, NULL) %>%
   group_by(Regression) %>% 
   summarize(MAE = round(mean(abs(Prediction - countAssault), na.rm = T),2),
@@ -635,21 +638,21 @@ st_set_geometry(reg.summary, NULL) %>%
 ```
 
 
-## Neighborhood Context
+### Neighborhood Context
 
 When incorporating race data by Census Tract, the table below shoes that both models are over-predicting in majority non-white neighborhoods and underpredicting in majority white neighborhoods. It should also be noted that a much smaller gap exists between the two categories in the spatial structure model. 
-```{r}
+```{r echo=FALSE, message = FALSE, warning = FALSE}
 st_set_geometry(final_reg.tracts, NULL) %>%
   group_by(Regression, raceContext) %>%
   summarize(mean.Error = mean(Error, na.rm = T)) %>%
   spread(raceContext, mean.Error) %>%
-  kable(caption = "Mean Error by neighborhood racial context") %>%
+  kable(caption = "Mean Error by Neighborhood Racial Context") %>%
   kable_styling("striped", full_width = F) 
 ```
 
 ## Spatial Risk Model vs. Current Business Practices
 In a well-fitted model, the areas of high risk will be targeted to places with a high density of points. In the risk predictions map below, this seems to be the case. Compared to the kernal density model primarily used in business practices, the spatial risk predictions are better targeted.
-```{r}
+```{r echo=FALSE, message = FALSE, warning = FALSE}
 rbind(assault_KDE_sf, assault_risk_sf) %>%
   gather(Variable, Value, -label, -Risk_Category, -geometry) %>%
   ggplot() +
@@ -663,7 +666,7 @@ rbind(assault_KDE_sf, assault_risk_sf) %>%
 ```
 
 To further compare the two models, the rate of assault points by risk category is calculated and displayed in the chart below. The risk predictions in the highest risk cateogry should be greater than that of the kernal density model. In this spatial risk model, such is the case. 
-```{r}
+```{r echo=FALSE, message = FALSE, warning = FALSE}
 rbind(assault_KDE_sf, assault_risk_sf) %>%
   st_set_geometry(NULL) %>%
   gather(Variable, Value, -label, -Risk_Category) %>%

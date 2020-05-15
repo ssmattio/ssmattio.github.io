@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Sara Mattio and Ilil Feiglin" />
+
+
+<title>CPLN 675 Final Project: Urban Growth Modeling</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/spacelab.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 52px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h2 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h3 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h4 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h5 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h6 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Sara Mattio</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="Predicting_EMS_Response_VABeach.html">Predicting EMS Response</a>
+</li>
+<li>
+  <a href="Predicting_Home_Prices_SF.html">Home Price Forecasting</a>
+</li>
+<li>
+  <a href="Analyzing_Geospatial_Risk_Models.html">Geospatial Risk Modeling</a>
+</li>
+<li>
+  <a href="Modeling_Urban_Growth.html">Modeling Urban Growth</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="contact.html">
+    <span class="fa fa-envelope fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="http://github.com/ssmattio">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://www.linkedin.com/in/saramattio/">
+    <span class="fa fa-linkedin fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">CPLN 675 Final Project: Urban Growth Modeling</h1>
+<h4 class="author">Sara Mattio and Ilil Feiglin</h4>
+<h4 class="date">5/13/2020</h4>
+
+</div>
+
+
+<div id="building-the-logistic-regression-model" class="section level1">
+<h1>Building the Logistic Regression Model</h1>
+<p>The local Metropolitan Planning Organization (MPO) has asked us to forecast urban development in 2020. Urban growth is a result of multiple variables, such as added population, growing industries that attract new residents, available lands, existing urban patterns, etc. To create a robust model that predicts the probability of a geographic unit, such as a defined cell, to transform, we need to incorporate relevant variables and test for their cumulative impact on the model accuracy. If the model proves useful (by cross-validation and reviewing the confusion matrix data), It will assist in the region’s next large-scale comprehensive planning process.</p>
+<div id="austin-texas" class="section level2">
+<h2>Austin, Texas</h2>
+<p>Austin, Texas, is the 11th most populated city within the US (as of 2014)<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>, and the fourth-largest city within Texas state. It is a growing city, with a positive population change between 2000 and 2010, and with a positive population growth estimation for 2018. We chose Austin as our case study because it combines significant urban growth with available expansion (undeveloped) areas within its MSA counties, as we will review in the land cover section.</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>For this purpose, we will use three MSA counties: Williamson, Travis, and Hays (from north to south).</p>
+<p>Before we present our regression model and the two scenarios, we will briefly present each variable we used within the model.</p>
+</div>
+<div id="variables" class="section level2">
+<h2>Variables</h2>
+<div id="land-cover" class="section level3">
+<h3>Land Cover</h3>
+<p>Our regression aims to predict urban growth. Therefore, our dependent variable must be a version of counted or aggregated cells (or pixels) that experienced urban change.</p>
+<p>To create our dependent variable, we first substracted developed areas within 2011 land cover data from 2001 development. This output was then reclassified to produce a raster that includes only NA and 1’s, using both ArcMap and R.</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>Observing the plot, it is apparent that these cells are clustered around the existing development while leaving the margins with a relatively low amount of change. This is a typical growth pattern and one we would expect around metropolitan areas.</p>
+<p>We then create a fishnet of 500*500 foot cells and review land cover classifications in the Austin MSA from 2001 data:</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-6-1.png" width="672" /><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-6-2.png" width="672" /></p>
+<p>We can see that urban development is clustered at the center, while the northeast part of the MSA is mainly farmland. Much of the western region of the MSA is covered in forest and throughout the entire area we see scattered ‘other undeveloped’ land cover.</p>
+</div>
+<div id="population-change" class="section level3">
+<h3>Population Change</h3>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>The quantile maps of population in 2001 and 2011 (based on census data) present a significant change in the outer ring of the city, with almost all parts experiencing some level of population growth. Specifically, we can see that the northeast region expanded and some areas to the east of the city increased significantly.</p>
+</div>
+<div id="spatial-lag" class="section level3">
+<h3>Spatial Lag</h3>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>We assume that future development has a higher probability to occur in proximity to the existing urban developed area. Therefore, we create a variable that measures the distance to existing urban land cover and gives higher weights to nearer cells. The result is seen in the above map.</p>
+</div>
+<div id="distance-to-highways" class="section level3">
+<h3>Distance to Highways</h3>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>We can see that the southwestern and northern MSA areas are not in proximity to any highway (and therefore have large segments in dark blue). In general, it seems the city is well-connected, with many areas in yellow and light blue.</p>
+</div>
+</div>
+<div id="final-dataset" class="section level2">
+<h2>Final Dataset</h2>
+<p>Before we build our model, we review the aggregated data to get a better understanding of it and observe potential trends. In the first plot (left), it is clear that new development is more likely to be closely located to highways compared to undeveloped areas. The results of the spatial lag plot (right) are less distinct but it can be observed that new development is located closer to existing development compared to undeveloped areas.</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>The effect of continuous and factor variables on population change are plotted, then grouped by developed and undeveloped (no change) cells. In both cases, we immediately notice a difference. As expected, the population change is visibly higher within cells that were developed.<br />
+<img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+</div>
+</div>
+<div id="predicting-change" class="section level1">
+<h1>Predicting Change</h1>
+<p>We now build and refine our model and test it:</p>
+<pre><code>## 
+## Call:
+## glm(formula = lc_change ~ wetlands + forest + farm + otherUndeveloped + 
+##     lagDevelopment + pop_2000 + pop_2010 + distance_highways, 
+##     family = binomial(link = &quot;logit&quot;), data = datTrain)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -3.7625  -0.2155  -0.0769  -0.0083   3.5781  
+## 
+## Coefficients:
+##                     Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)       -2.367e+01  2.991e+02  -0.079    0.937    
+## wetlands1          1.945e+01  2.991e+02   0.065    0.948    
+## forest1            2.164e+01  2.991e+02   0.072    0.942    
+## farm1              2.177e+01  2.991e+02   0.073    0.942    
+## otherUndeveloped1  2.275e+01  2.991e+02   0.076    0.939    
+## lagDevelopment    -1.159e-03  1.386e-04  -8.362  &lt; 2e-16 ***
+## pop_2000          -9.241e-03  1.217e-03  -7.590 3.19e-14 ***
+## pop_2010           1.125e-02  9.030e-04  12.462  &lt; 2e-16 ***
+## distance_highways -3.937e-04  3.877e-05 -10.154  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 4088.0  on 14954  degrees of freedom
+## Residual deviance: 2785.2  on 14946  degrees of freedom
+## AIC: 2803.2
+## 
+## Number of Fisher Scoring iterations: 19</code></pre>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>We first created six models and in each, we added a variable. This method allows us to review the impact of each additional variable when compare the R-squared values of the models. Evaluating those models, we saw a slight drop in “goodness of fit” from models 4 to 5. We then built an additional 7th model using the population data (as in model 4) and the highways variable. It resulted in the best fit and highest R-squared value, as seen in the chart.</p>
+<p>The plot below shows the predicted probabilities based on Model 7 when using a .5 (50%) threshold. We see that only a small number of predicted probabilities for development change are greater than or equal to 50%.</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>At the next stage of reviewing our model with a confusion matrix, a smaller development classification threshold is employed.</p>
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Variable
+</th>
+<th style="text-align:right;">
+Sensitivity
+</th>
+<th style="text-align:right;">
+Specificity
+</th>
+<th style="text-align:right;">
+Accuracy
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+predClass_05
+</td>
+<td style="text-align:right;">
+0.76
+</td>
+<td style="text-align:right;">
+0.85
+</td>
+<td style="text-align:right;">
+0.85
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+predClass_17
+</td>
+<td style="text-align:right;">
+0.36
+</td>
+<td style="text-align:right;">
+0.97
+</td>
+<td style="text-align:right;">
+0.96
+</td>
+</tr>
+</tbody>
+</table>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-15-1.png" width="864" /></p>
+<p>After testing two thresholds (5% and 17%) and their respective sensitivity, specificity, and accuracy values (above chart), we utilize the higher threshold for our confusion matrix. In this specific case, we prefer to have a model that is less precise but generally predicts where new development can happen. As seen in the plot, we receive more negative values (with a higher true-negative rate) using the 17% threshold.</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<div id="demand-side-change" class="section level2">
+<h2>1. Demand-Side Change</h2>
+<p>In this scenario, we approximate 2020 Population Projections for Austin, distribute the ‘new’ population among census tracts in the region, and predict where new development will occur in 2020.</p>
+<p>The first stage is predicting population for the three MSA counties.</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p>We create a new data frame which includes 2010 population counts and 2020 projections for each county. We can see that Travis county (that includes Austin’s center) has the higest projection, with Williamson and Hays following. Hays county contains higher forest cover which may result in the diversion of growth to Williamson or Travis Counties.</p>
+<p>After assessing 2020 population, we can predict development demand.</p>
+<div id="demand-prediction" class="section level3">
+<h3>Demand Prediction</h3>
+<p>We can see that the highest prediction quantile (dark blue) is around highways. In general, the higher quantiles are within Travis and Williamson counties.</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+</div>
+<div id="allocation" class="section level3">
+<h3>Allocation</h3>
+<p>In this step, we try to estimate and recommend where new development can and should be allocated, We review sensitive land cover, the destruction that already occured in the last decade, and demand/availabilty parameters of each county to do so. Observing the change from 2001 to 2011, we see areas where forest or wetland was lost (first map). We then plot land cover with continuous use of either forest or wetland as of 2011, resulting in a map of sensitive regions in the area (second map). The resulting distribution of sensitive regions in the map can be explained by similar patterns of clustered forest land cover from 2001 and 2011 Land Cover data.</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-20-1.png" width="672" /><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-20-2.png" width="672" /></p>
+<p>Finally, several key indicators are plotted by county. The allocation chart allows us to navigate future development needs and restrictions. All three counties have some development demand (although Hays is the lowest), and all three have significant undeveloped areas. However, Hays County exhibit high levels of sensitive areas and, coupled with low demand, is the least suitable for future development.</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<p>We will now map some of these variables for each county to understand the spatial opportunities and restraints better:</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<p>We can observe that the majority of Hays County is not suitable for development with the exception of the northeastern section, where high values of projected population are exhibited.</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-24-1.png" width="672" /><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-24-2.png" width="672" /></p>
+<p>Travis county, where much of Austin’s development is contained, is largely developed around its center, with possible development potential (one that is uncovered by either black or red cells) in its northeastern region. This is a partial image because cities can use infill and densification tactics to increase population within already developed land cover.</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-25-1.png" width="672" /></p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-26-1.png" width="672" /></p>
+<p>Lastly, the northern county exhibit the highest uncovered areas, with potential for growth in its eastern part.</p>
+<p>The three counties exhibit varying levels of land sensitivity. These maps increase our general understanding of possible growth areas but do not consider infill, densification, or the potential destruction of sensitive land (if approved by the municipality). It should be regarded as a general allocation direction and not taken as is. With the additional insight provided by the maps, we can state that we suggest development in the upper eastern part of Austin’s MSA.</p>
+</div>
+</div>
+<div id="supply-side-change" class="section level2">
+<h2>2. Supply-Side Change</h2>
+<p>After reviewing demand projections, we then test projections based on an imagined Highway Expansion Project. We propose two highways extensions (seen in the below maps in red): one within Travis county and one in Williamson. The proposed extensions will allow urban growth further from the city center. As seen in previous maps, those areas do not contain many sensitive cells (red cells).</p>
+<p>We first added the new roads into our dataset, then tested the regression model previously used (Model 7) with the new data. We created a population forecast and plotted the probability to review the change from our first model.</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-28-1.png" width="672" /></p>
+
+<p>As seen above, we added a new highway section within Travis County in high proximity to Williamson’s boundary. As discussed before, both Travis and Williamson are believed to be the most suitable for new development, with little to no projected damage to sensitive areas. The new highway will allow for greater connectivity to Austin’s center while keeping intact the forest areas that are west to Austin’s center.</p>
+<div id="prediction" class="section level3">
+<h3>Prediction</h3>
+<p>After adding the highway to our data, we run our revised model.</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-30-1.png" width="672" /></p>
+<p>We can see how the two new highways segments alter the probability of growth of the surrounding areas in comparison to the previous scenario.</p>
+<p>Because we are using the same threshold (17%) as before, our confusion matrix is the same.</p>
+<pre><code>##           Reference
+## Prediction     0     1
+##          0 25442   291
+##          1  3562   615</code></pre>
+<p>This matrix indicates that our model is good at predicting the zero’s (no change), but fails to predict the actual location of the ones (new development). As discussed before, in this particular case we would like to be generally predict where new development can happen, particularly in light of our proposed highways.</p>
+</div>
+<div id="allocation-1" class="section level3">
+<h3>Allocation</h3>
+<p>We review the two counties that have expanded growth due to the highway extension.</p>
+<p><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-33-1.png" width="672" /><img src="Modeling_Urban_Growth_files/figure-html/unnamed-chunk-33-2.png" width="672" /> The new segments are shown as black cells while their respective background indicates the increased demand around these new commute patterns.</p>
+</div>
+</div>
+</div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<p>Austin is a growing city, with sensitive areas on the west that restrict growth. Despite growth restrictions in these areas, future development needs can be met by expanding the northwest (with the regional agriculture sector paying the price), infill and densification strategies within existing developed land (or a combination of both).</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://www.infoplease.com/us/us-cities/top-50-cities-us-population-and-rank" class="uri">https://www.infoplease.com/us/us-cities/top-50-cities-us-population-and-rank</a><a href="#fnref1" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

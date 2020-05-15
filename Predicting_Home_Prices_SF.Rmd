@@ -1,6 +1,5 @@
 ---
 title: "Data-Driven Decision-Making: Predicting Home Values in San Francisco"
-author: "Sara Mattio and Kate Sutton"
 date: "10/15/2019"
 output:  
   html_document#:
@@ -89,7 +88,6 @@ plotTheme <- function(base_size = 12) {
   )
 }
 ```
-
 
 ```{r include=FALSE}
 neighborhoods <- st_read("https://data.sfgov.org/api/geospatial/p5b7-5n3h?method=export&format=GeoJSON") %>%
@@ -220,19 +218,14 @@ moranTest <- moran.mc(filter(SF.test_2, !is.na(SalePrice.Error))$SalePrice.Error
                       spatialWeights.test , nsim = 999)
 ```
 
-The table below provides summary statistics for the variables, sorted by category. 
-```{r, echo=FALSE}
-summary(census_1)
-```
-
 The correlation matrix below indicates the corrleation of all independent variables with the dependent variable. Note a lack of multicollinearity in the model--a lack of independent variables that are highly related to each other. 
 ```{r, echo=FALSE}
 res <- cor(predictors)
 round(res, 3)
 ```
 
-In Figure 2.1, four indicators of interest are shown in a correlation scatterplot. Variables that appeared to have correlation with sale price were tested to be included in the model. 
-```{r, echo=FALSE}
+In the plots below, four indicators of interest are shown in a correlation scatterplot. Variables that appeared to have correlation with sale price were tested to be included in the model. 
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
 census_1 %>%
   dplyr::select(SalePrice, crime_nn5, LandUse, BLDGSQFT, Rooms) %>%
   st_set_geometry(NULL) %>%
@@ -241,10 +234,10 @@ census_1 %>%
   geom_point() +
   geom_smooth(method = "lm", se=F, colour = "#25CB10") +
   facet_wrap(~Variable) +
-  labs(title = "Fig. 2.1 Correlations between Sale Price and Selected Variables")
+  labs(title = "Correlations between Sale Price and Selected Variables")
 ```
 
-The map in Figure 2.2 shows housing prices mapped out in San Francisco. Higher home values, indicated by orange poionts, tend to be clustered together in the center and northern region of the city. Homes with lower values, indicated by green points, tend to be clustered in the south and southwestern part of San Francisco. 
+The map below shows housing prices mapped out in San Francisco. Higher home values, indicated by orange poionts, tend to be clustered together in the center and northern region of the city. Homes with lower values, indicated by green points, tend to be clustered in the south and southwestern part of San Francisco. 
 ```{r, echo=FALSE}
 ggplot() +
   geom_sf(data = neighborhoods, fill = "grey70") +
@@ -258,6 +251,7 @@ ggplot() +
 ```
 
 The maps below show several variables mapped out in San Francisco. 
+\s\s
 ```{r, echo=FALSE}
 ggplot() +
   geom_sf(data = neighborhoods, fill = "grey70") +
