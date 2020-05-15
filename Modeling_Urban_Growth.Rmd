@@ -4,7 +4,7 @@ author: "Sara Mattio and Ilil Feiglin"
 date: "5/13/2020"
 output: 
   html_document:
-    theme: spacelab
+    theme: united
     highlight: tango
     toc: true
     toc_float: true
