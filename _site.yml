@@ -11,6 +11,8 @@ navbar:
       href: Analyzing_Geospatial_Risk_Models.html
     - text: "Modeling Urban Growth"
       href: Modeling_Urban_Growth.html
+    - text: "Flood Inundation Forecasting"
+      href: Flood_Inundation_Model.html
   right:
     - icon: fa-envelope fa-lg
       href: contact.html

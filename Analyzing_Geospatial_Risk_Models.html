@@ -12,7 +12,7 @@
 <meta name="author" content="Sara Mattio" />
 
 
-<title>Assignment 10: Predictive Modeling &amp; Geospatial Risk Models - Predicting Assault in Chicago</title>
+<title>Predictive Modeling &amp; Geospatial Risk Models - Predicting Assault in Chicago</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -365,6 +365,12 @@ div.tocify {
 <li>
   <a href="Analyzing_Geospatial_Risk_Models.html">Geospatial Risk Modeling</a>
 </li>
+<li>
+  <a href="Modeling_Urban_Growth.html">Modeling Urban Growth</a>
+</li>
+<li>
+  <a href="Flood_Inundation_Model.html">Flood Inundation Forecasting</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -402,7 +408,7 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Assignment 10: Predictive Modeling &amp; Geospatial Risk Models - Predicting Assault in Chicago</h1>
+<h1 class="title toc-ignore">Predictive Modeling &amp; Geospatial Risk Models - Predicting Assault in Chicago</h1>
 <h4 class="author">Sara Mattio</h4>
 <h4 class="date">11/8/2019</h4>
 
@@ -415,13 +421,8 @@ div.tocify {
 </div>
 <div id="mapping-aggravated-assault-in-chicago" class="section level2">
 <h2>Mapping Aggravated Assault in Chicago</h2>
-<p>The map below shows the location of reported cases of assault in Chicago from 2017. In this model, it is likely that a reporting bias may exist in low-income, non-white areas where there is a higher level of mistrust of public safety officers. Therefore, it is more likely that cases of assault where reported in middle and higher income neighborhoods where residents are majority white.</p>
-<pre class="r"><code>ggplot() + 
-  geom_sf(data = chicagoBoundary) +
-  geom_sf(data = assault, colour=&quot;red&quot;, size=0.1, show.legend = &quot;point&quot;) +
-  labs(title= &quot;Aggravated Assault, Chicago - 2017&quot;) +
-  mapTheme()</code></pre>
-<p><img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>The map below shows the location of reported cases of assault in Chicago from 2017. In this model, it is likely that a reporting bias may exist in low-income, non-white areas where there is a higher level of mistrust of public safety officers. Therefore, it is more likely that cases of assault where reported in middle and higher income neighborhoods where residents are majority white. </p>
+<p><img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <p>To begin developing a prediction model, assault features are mapped with a fishnet to create a count of aggravated assault by fishnet.</p>
 <pre class="r"><code>crime_net &lt;- 
   assault %&gt;% 
@@ -430,21 +431,13 @@ div.tocify {
   aggregate(., fishnet, sum) %&gt;%
   mutate(countAssault = ifelse(is.na(countAssault), 0, countAssault),
          uniqueID = rownames(.),
-         cvID = sample(round(nrow(fishnet) / 24), size=nrow(fishnet), replace = TRUE))
-
-#map results
-ggplot() +
-  geom_sf(data = crime_net, aes(fill = countAssault)) +
-  scale_fill_viridis() +
-  labs(title = &quot;Count of Assault for the fishnet&quot;) +
-  mapTheme()</code></pre>
-<p><img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+         cvID = sample(round(nrow(fishnet) / 24), size=nrow(fishnet), replace = TRUE))</code></pre>
+<p><img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 </div>
-<div id="incorporating-risk-factors-feature-engineering" class="section level2">
-<h2>Incorporating Risk Factors (Feature Engineering)</h2>
+<div id="incorporating-risk-factors" class="section level2">
+<h2>Incorporating Risk Factors</h2>
 <p>A series of eight risk factors were wrangled to determine if assault is more prevalent when exposed to these characteristics. The risk factors are mapped below.</p>
-<pre class="r"><code>#data wrangling
-vars_net &lt;- 
+<pre class="r"><code>vars_net &lt;- 
   rbind(abandonCars,streetLightsOut,alleyLightsOut, abandonBuildings,
         liquorRetail, graffiti, sanitation, LowTrafficCounts) %&gt;%
   st_join(., fishnet, join=st_within) %&gt;%
@@ -456,25 +449,7 @@ vars_net &lt;-
   st_sf() %&gt;%
   dplyr::select(-`&lt;NA&gt;`) %&gt;%
   na.omit()</code></pre>
-<pre><code>## Joining, by = &quot;uniqueID&quot;</code></pre>
-<pre class="r"><code>#map features
-vars_net.long &lt;- 
-  vars_net %&gt;%
-  gather(Variable, value, -geometry, -uniqueID)
-
-vars &lt;- unique(vars_net.long$Variable)
-mapList &lt;- list()
-
-for(i in vars){
-  mapList[[i]] &lt;- 
-    ggplot() +
-    geom_sf(data = filter(vars_net.long, Variable == i), aes(fill=value), colour=NA) +
-    scale_fill_viridis(name=&quot;&quot;) +
-    labs(title=i) +
-    mapTheme()}
-
-do.call(grid.arrange,c(mapList, ncol =2, top = &quot;Risk Factors by Fishnet&quot;))</code></pre>
-<p><img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p><img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 </div>
 <div id="local-morans-i" class="section level2">
 <h2>Local Moran’s I</h2>
@@ -488,63 +463,21 @@ do.call(grid.arrange,c(mapList, ncol =2, top = &quot;Risk Factors by Fishnet&quo
                 Local_Morans_I = Ii, 
                 P_Value = `Pr(z &gt; 0)`) %&gt;%
   mutate(Significant_Hotspots = ifelse(P_Value &lt;= 0.05, 1, 0)) %&gt;%
-  gather(Variable, Value, -geometry)</code></pre>
-<pre><code>## Warning in lag.listw(listw, z, zero.policy = zero.policy, NAOK = NAOK): NAs in
-## lagged values</code></pre>
-<pre class="r"><code>vars &lt;- unique(final_net.localMorans$Variable)
-varList &lt;- list()
+  gather(Variable, Value, -geometry)
 
-for(i in vars){
-  varList[[i]] &lt;- 
-    ggplot() +
-    geom_sf(data = filter(final_net.localMorans, Variable == i), aes(fill = Value), colour=NA) +
-    scale_fill_viridis(name=&quot;&quot;) +
-    labs(title=i) +
-    mapTheme()}
-
-do.call(grid.arrange,c(varList, ncol = 4, top = &quot;Local Morans I statistics, Aggravated Assault&quot;))</code></pre>
-<p><img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+vars &lt;- unique(final_net.localMorans$Variable)
+varList &lt;- list()</code></pre>
+<p><img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-13-1.png" width="864" /></p>
 </div>
 <div id="testing-the-correlation-of-features-to-assault" class="section level2">
 <h2>Testing the Correlation of Features to Assault</h2>
-<p>The charts below examine the correlation between each risk factor and the outcome, assault. Significant risk factors include abandoned buildings, alley light outages, and abandoned cars. In each of these factors, an increase in the risk factor results in an increase in assault and the futher the distance from these risk factors, the less occurrences of assault.</p>
-<pre class="r"><code>ggplot(correlation.long, aes(Value, countAssault)) +
-  geom_point(size = 0.1) +
-  geom_text(data = correlation.cor, aes(label = paste(&quot;r =&quot;, round(correlation, 2))),
-            x=-Inf, y=Inf, vjust = 1, hjust = -.1) +
-  geom_smooth(method = &quot;lm&quot;, se = FALSE, colour = &quot;#a2d7d8&quot;) +
-  facet_wrap(~Variable, ncol = 2, scales = &quot;free&quot;) +
-  labs(title = &quot;Assault count as a function of risk factors&quot;)</code></pre>
-<pre><code>## Warning: Removed 1 rows containing non-finite values (stat_smooth).</code></pre>
-<pre><code>## Warning: Removed 1 rows containing missing values (geom_point).</code></pre>
-<p><img src="Analyzing_Geospatial_Risk_Models_files/figure-html/correlation%20plot-1.png" width="720" /></p>
+<p>The charts below examine the correlation between each risk factor and the outcome, assault. Significant risk factors include abandoned buildings, alley light outages, and abandoned cars. In each of these factors, an increase in the risk factor results in an increase in assault and the futher the distance from these risk factors, the less occurrences of assault. <img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-14-1.png" width="720" /></p>
 </div>
 <div id="poisson-regression-model-and-results" class="section level2">
 <h2>Poisson Regression Model and Results</h2>
-<p>The bar chart below shows the distribution of assault by grid cell. Based on this distribution, it is clear that the Poisson Regression model is best suited for this case.</p>
-<pre class="r"><code>ggplot(final_net, aes(countAssault)) + 
-  geom_histogram(binwidth = 1) +
-  labs(title = &quot;Distribution of assault by grid cell&quot;)</code></pre>
-<p><img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
-<p>The set of maps below shows mapped prediction errors by random k-fold and spatial cross validation. When comparing the two validation models, the lack of the spatial components seems to be resulting in increased errors.</p>
-<pre class="r"><code>filter(reg.summary, Regression == &quot;Spatial LOGO-CV: Just Risk Factors&quot; | 
-         Regression == &quot;Spatial LOGO-CV: Spatial Structure&quot;) %&gt;%
-  ggplot() +
-  geom_sf(aes(fill = Error)) +
-  facet_wrap(~Regression) +
-  scale_fill_viridis() +
-  labs(title = &quot;Assault errors by Regression&quot;) +
-  mapTheme()</code></pre>
-<p><img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
-<p>The Mean Absolute Error (MAE) for both cross-validation models is provided in the table below. The most significant takeaway from this table is the noticable difference in the absolute error – incorporating spatial structure reduces the MAE.</p>
-<pre class="r"><code>st_set_geometry(reg.summary, NULL) %&gt;%
-  group_by(Regression) %&gt;% 
-  summarize(MAE = round(mean(abs(Prediction - countAssault), na.rm = T),2),
-            SD_MAE = round(sd(abs(Prediction - countAssault), na.rm = T),2)) %&gt;% 
-  kable(caption = &quot;MAE by regression&quot;) %&gt;%
-  kable_styling(&quot;striped&quot;, full_width = F) %&gt;%
-  row_spec(2, color = &quot;black&quot;, background = &quot;#FDE725FF&quot;) %&gt;%
-  row_spec(4, color = &quot;black&quot;, background = &quot;#FDE725FF&quot;) </code></pre>
+<p>The bar chart below shows the distribution of assault by grid cell. Based on this distribution, it is clear that the Poisson Regression model is best suited for this case. <img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>The set of maps below shows mapped prediction errors by random k-fold and spatial cross validation. When comparing the two validation models, the lack of the spatial components seems to be resulting in increased errors. <img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+The Mean Absolute Error (MAE) for both cross-validation models is provided in the table below. The most significant takeaway from this table is the noticable difference in the absolute error – incorporating spatial structure reduces the MAE.
 <table class="table table-striped" style="width: auto !important; margin-left: auto; margin-right: auto;">
 <caption>
 MAE by regression
@@ -568,10 +501,10 @@ SD_MAE
 Random k-fold CV: Just Risk Factors
 </td>
 <td style="text-align:right;">
-2.58
+2.57
 </td>
 <td style="text-align:right;">
-2.96
+2.95
 </td>
 </tr>
 <tr>
@@ -590,10 +523,10 @@ Random k-fold CV: Spatial Structure
 Spatial LOGO-CV: Just Risk Factors
 </td>
 <td style="text-align:right;">
-2.62
+2.61
 </td>
 <td style="text-align:right;">
-3.02
+3.01
 </td>
 </tr>
 <tr>
@@ -604,24 +537,17 @@ Spatial LOGO-CV: Spatial Structure
 2.17
 </td>
 <td style="text-align:right;color: black !important;background-color: rgba(253, 231, 37, 1) !important;">
-2.33
+2.32
 </td>
 </tr>
 </tbody>
 </table>
-</div>
-<div id="neighborhood-context" class="section level2">
-<h2>Neighborhood Context</h2>
-<p>When incorporating race data by Census Tract, the table below shoes that both models are over-predicting in majority non-white neighborhoods and underpredicting in majority white neighborhoods. It should also be noted that a much smaller gap exists between the two categories in the spatial structure model.</p>
-<pre class="r"><code>st_set_geometry(final_reg.tracts, NULL) %&gt;%
-  group_by(Regression, raceContext) %&gt;%
-  summarize(mean.Error = mean(Error, na.rm = T)) %&gt;%
-  spread(raceContext, mean.Error) %&gt;%
-  kable(caption = &quot;Mean Error by neighborhood racial context&quot;) %&gt;%
-  kable_styling(&quot;striped&quot;, full_width = F) </code></pre>
+<div id="neighborhood-context" class="section level3">
+<h3>Neighborhood Context</h3>
+When incorporating race data by Census Tract, the table below shoes that both models are over-predicting in majority non-white neighborhoods and underpredicting in majority white neighborhoods. It should also be noted that a much smaller gap exists between the two categories in the spatial structure model.
 <table class="table table-striped" style="width: auto !important; margin-left: auto; margin-right: auto;">
 <caption>
-Mean Error by neighborhood racial context
+Mean Error by Neighborhood Racial Context
 </caption>
 <thead>
 <tr>
@@ -642,10 +568,10 @@ Majority_White
 Spatial LOGO-CV: Just Risk Factors
 </td>
 <td style="text-align:right;">
-0.6123199
+0.6112497
 </td>
 <td style="text-align:right;">
--0.6229433
+-0.6216725
 </td>
 </tr>
 <tr>
@@ -653,42 +579,20 @@ Spatial LOGO-CV: Just Risk Factors
 Spatial LOGO-CV: Spatial Structure
 </td>
 <td style="text-align:right;">
-0.1155002
+0.1153946
 </td>
 <td style="text-align:right;">
--0.1068955
+-0.1071654
 </td>
 </tr>
 </tbody>
 </table>
 </div>
+</div>
 <div id="spatial-risk-model-vs.-current-business-practices" class="section level2">
 <h2>Spatial Risk Model vs. Current Business Practices</h2>
-<p>In a well-fitted model, the areas of high risk will be targeted to places with a high density of points. In the risk predictions map below, this seems to be the case. Compared to the kernal density model primarily used in business practices, the spatial risk predictions are better targeted.</p>
-<pre class="r"><code>rbind(assault_KDE_sf, assault_risk_sf) %&gt;%
-  gather(Variable, Value, -label, -Risk_Category, -geometry) %&gt;%
-  ggplot() +
-  geom_sf(aes(fill = Risk_Category), colour = NA) +
-  geom_sf(data = sample_n(assault, 1500), size = .1, colour = &quot;black&quot;) +
-  facet_wrap(~label, ) +
-  scale_fill_viridis(discrete = TRUE) +
-  labs(title=&quot;Comparison of Kernel Density and Risk Predictions&quot;,
-       subtitle=&quot;Relative to test set points (in black)&quot;) +
-  mapTheme()</code></pre>
-<p><img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
-<p>To further compare the two models, the rate of assault points by risk category is calculated and displayed in the chart below. The risk predictions in the highest risk cateogry should be greater than that of the kernal density model. In this spatial risk model, such is the case.</p>
-<pre class="r"><code>rbind(assault_KDE_sf, assault_risk_sf) %&gt;%
-  st_set_geometry(NULL) %&gt;%
-  gather(Variable, Value, -label, -Risk_Category) %&gt;%
-  group_by(label, Risk_Category) %&gt;%
-  summarize(countAssault = sum(Value)) %&gt;%
-  ungroup() %&gt;%
-  group_by(label) %&gt;%
-  mutate(Rate_of_test_set_crimes = countAssault / sum(countAssault)) %&gt;%
-  ggplot(aes(Risk_Category,Rate_of_test_set_crimes)) +
-  geom_bar(aes(fill=label), position=&quot;dodge&quot;, stat=&quot;identity&quot;) +
-  scale_fill_viridis(discrete = TRUE)</code></pre>
-<p><img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>In a well-fitted model, the areas of high risk will be targeted to places with a high density of points. In the risk predictions map below, this seems to be the case. Compared to the kernal density model primarily used in business practices, the spatial risk predictions are better targeted. <img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p>To further compare the two models, the rate of assault points by risk category is calculated and displayed in the chart below. The risk predictions in the highest risk cateogry should be greater than that of the kernal density model. In this spatial risk model, such is the case. <img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
 </div>
 <div id="conclusion" class="section level2">
 <h2>Conclusion</h2>
