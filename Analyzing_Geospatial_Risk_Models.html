@@ -376,19 +376,19 @@ div.tocify {
         <li>
   <a href="contact.html">
     <span class="fa fa-envelope fa-lg"></span>
-     
+
   </a>
 </li>
 <li>
   <a href="http://github.com/ssmattio">
     <span class="fa fa-github fa-lg"></span>
-     
+
   </a>
 </li>
 <li>
   <a href="https://www.linkedin.com/in/saramattio/">
     <span class="fa fa-linkedin fa-lg"></span>
-     
+
   </a>
 </li>
       </ul>
@@ -424,10 +424,10 @@ div.tocify {
 <p>The map below shows the location of reported cases of assault in Chicago from 2017. In this model, it is likely that a reporting bias may exist in low-income, non-white areas where there is a higher level of mistrust of public safety officers. Therefore, it is more likely that cases of assault where reported in middle and higher income neighborhoods where residents are majority white. </p>
 <p><img src="Analyzing_Geospatial_Risk_Models_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <p>To begin developing a prediction model, assault features are mapped with a fishnet to create a count of aggravated assault by fishnet.</p>
-<pre class="r"><code>crime_net &lt;- 
-  assault %&gt;% 
-  dplyr::select() %&gt;% 
-  mutate(countAssault = 1) %&gt;% 
+<pre class="r"><code>crime_net &lt;-
+  assault %&gt;%
+  dplyr::select() %&gt;%
+  mutate(countAssault = 1) %&gt;%
   aggregate(., fishnet, sum) %&gt;%
   mutate(countAssault = ifelse(is.na(countAssault), 0, countAssault),
          uniqueID = rownames(.),
@@ -437,7 +437,7 @@ div.tocify {
 <div id="incorporating-risk-factors" class="section level2">
 <h2>Incorporating Risk Factors</h2>
 <p>A series of eight risk factors were wrangled to determine if assault is more prevalent when exposed to these characteristics. The risk factors are mapped below.</p>
-<pre class="r"><code>vars_net &lt;- 
+<pre class="r"><code>vars_net &lt;-
   rbind(abandonCars,streetLightsOut,alleyLightsOut, abandonBuildings,
         liquorRetail, graffiti, sanitation, LowTrafficCounts) %&gt;%
   st_join(., fishnet, join=st_within) %&gt;%
@@ -454,13 +454,13 @@ div.tocify {
 <div id="local-morans-i" class="section level2">
 <h2>Local Moran’s I</h2>
 <p>To better understand the spatial structure of aggravated assault, a Local Moran’s I was utilized to visualize and test the correlation of <code>countAssault</code>.</p>
-<pre class="r"><code>final_net.localMorans &lt;- 
+<pre class="r"><code>final_net.localMorans &lt;-
   cbind(
     as.data.frame(localmoran(final_net$countAssault, final_net.weights)),
-    as.data.frame(final_net, NULL)) %&gt;% 
+    as.data.frame(final_net, NULL)) %&gt;%
   st_sf() %&gt;%
-  dplyr::select(Assault_Count = countAssault, 
-                Local_Morans_I = Ii, 
+  dplyr::select(Assault_Count = countAssault,
+                Local_Morans_I = Ii,
                 P_Value = `Pr(z &gt; 0)`) %&gt;%
   mutate(Significant_Hotspots = ifelse(P_Value &lt;= 0.05, 1, 0)) %&gt;%
   gather(Variable, Value, -geometry)

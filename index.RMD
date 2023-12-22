@@ -7,7 +7,7 @@ knitr::opts_chunk$set(cache = TRUE)
 
 <link rel="stylesheet" href="styles.css" type="text/css">
 
-## Hey, I'm Sara 
+## Hey, I'm Sara
 
 
 <font size = "3">I am data analyst with 7 years experience, ranging from analysis of geospatial data in government, product analytics at Indeed, and product and marketing analytics at the Content Strategy and Partnerships team at Comcast. My portfolio contains some of the work from my Master of Urban Spatial Analytics (MUSA) Program at the [University of Pennsylvania](https://www.design.upenn.edu/musa/about). I also have an MSc in Urban Planning in Developing and Transitional Regions from Oxford Brookes University.
